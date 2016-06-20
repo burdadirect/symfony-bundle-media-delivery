@@ -24,7 +24,7 @@ class ImageDeliveryExtension extends \Twig_Extension
     return array(
       new \Twig_SimpleFilter('src', array($this, 'srcFilter')),
       new \Twig_SimpleFilter('srcRated', array($this, 'srcRatedFilter')),
-      new \Twig_SimpleFilter('srcRatedForUser', array($this, 'srcRatedUserFilter')),
+      new \Twig_SimpleFilter('srcRatedForUser', array($this, 'srcRatedForUserFilter')),
     );
   }
 

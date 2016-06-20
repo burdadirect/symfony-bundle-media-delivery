@@ -19,10 +19,28 @@ interface ImageDeliverable {
 
   public function getCredit();
 
-  public function getClipping();
+  /**
+   * Returns true if an image is rated and it's not the appropriate time.
+   *
+   * @param null $datetime
+   * @return bool
+   */
+  public function isCurrentlyRated(\DateTime $datetime = NULL);
 
+  /**
+   * Get clipping for a certain format.
+   *
+   * @param string $format
+   * @return array:
+   */
+  public function getClipping($format);
+
+  /**
+   * Determines if a format hat a custom clipping.
+   *
+   * @param string $format
+   * @return boolean
+   */
   public function hasClipping($format);
-
-  public function isCurrentlyRated();
 
 }
