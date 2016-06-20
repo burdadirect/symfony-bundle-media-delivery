@@ -3,7 +3,7 @@
 namespace HBM\ImageDeliveryBundle\Entity\Interfaces;
 
 
-interface Deliverable {
+interface ImageDeliverable {
 
   public function getId();
 
@@ -15,10 +15,14 @@ interface Deliverable {
 
   public function getFSK();
 
+  public function getWatermark();
+
   public function getCredit();
 
   public function getClipping();
 
   public function hasClipping($format);
+
+  public function isCurrentlyRated();
 
 }

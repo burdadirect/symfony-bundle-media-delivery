@@ -1,7 +1,8 @@
 <?php
 namespace HBM\ImageDeliveryBundle\Services;
 
-use HBM\ImageDeliveryBundle\Entity\Interfaces\Deliverable;
+use HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 
@@ -29,7 +30,19 @@ class ImageDeliveryHelper {
     $this->logger = $logger;
   }
 
-  public function src(Deliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  /**
+   * Returns an image url.
+   *
+   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param $format
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
+   * @return string
+   * @throws \Exception
+   */
+  public function src(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+    // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientId === NULL) {
       foreach ($this->config['clients'] as $clientConfig) {
@@ -39,26 +52,29 @@ class ImageDeliveryHelper {
       }
     }
 
-    $clientSecretToUse = $clientId;
+    // CLIENT SECRET
+    $clientSecretToUse = $clientSecret;
     if ($clientSecret === NULL) {
-      foreach ($this->config['clients'] as $clientConfig) {
-        if ($clientConfig['id'] === $clientId) {
-          $clientSecretToUse = $clientConfig['secret'];
-        }
+      if (!isset($this->config['clients'][$clientId])) {
+        throw new \Exception('Client "'.$clientId.'" not found.');
       }
+
+      $clientSecretToUse = $this->config['clients'][$clientId]['secret'];
     }
 
-    $formatConfigToUse = [];
-    foreach ($this->config['formats'] as $formatConfig) {
-      if ($formatConfig['format'] === $format) {
-        $formatConfigToUse = $formatConfig;
-      }
+    // FORMAT
+    if (!isset($this->config['formats'][$format])) {
+      throw new \Exception('Format "'.$format.'" not found.');
     }
+    $formatConfigToUse = $this->config['formats'][$format];
 
+    // TIME AND DURATION
     $timeAndDuration = $this->getTimeAndDuration($duration);
 
+    // FILE
     $file = ltrim($image->getFile(), '/');
 
+    // CUSTOM
     $custom = $image->hasClipping($this->formatPlain($format));
 
     $signature = $this->getSignature(
@@ -92,6 +108,41 @@ class ImageDeliveryHelper {
     }
 
     return $url;
+  }
+
+  /**
+   * Returns an image url, depending of image settings.
+   *
+   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param $format
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
+   * @return string
+   * @throws \Exception
+   */
+  public function srcRated(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+    return $this->src($image, $this->formatAdjusted($image, $format), $duration, $clientId, $clientSecret);
+  }
+
+  /**
+   * Returns an image url, depending on user settings.
+   *
+   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable $user
+   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param $format
+   * @param $duration
+   * @param null $clientId
+   * @param null $clientSecret
+   * @return string
+   * @throws \Exception
+   */
+  public function srcRatedForUser(UserReceivable $user, ImageDeliverable $image, $format, $duration, $clientId = NULL, $clientSecret = NULL) {
+    if ($user && $user->getNoFsk() && ($image->getFsk() < 21)) {
+      return $this->src($image, $format, $duration, $clientId, $clientSecret);
+    } else {
+      return $this->srcRated($image, $format, $duration, $clientId, $clientSecret);
+    }
   }
 
   /**
@@ -143,6 +194,30 @@ class ImageDeliveryHelper {
     }
 
     return $formatOrig;
+  }
+
+  /**
+   * Check for retina/blurred/watermarked format.
+   *
+   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param $format
+   * @return string
+   */
+  public function formatAdjusted(ImageDeliverable $image, $format) {
+    $formatsToWatermark = [];
+    foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+      if ($formatConfig['watermark']) {
+        $formatsToWatermark[] = $formatKey;
+      }
+    }
+
+    if ($image->isCurrentlyRated()) {
+      $format .= '-blurred';
+    } elseif ($image->getWatermark() && in_array($format, $formatsToWatermark)) {
+      $format .= '-watermarked';
+    }
+
+    return $format;
   }
 
   /**

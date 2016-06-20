@@ -1,11 +1,12 @@
 <?php
 
-namespace HBM\TwigExtensionsBundle\Twig;
+namespace HBM\ImageDeliveryBundle\Twig;
 
-use HBM\ImageDeliveryBundle\Entity\Interfaces\Deliverable;
+use HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable;
 use HBM\ImageDeliveryBundle\Services\ImageDeliveryHelper;
 
-class BaseUrlExtension extends \Twig_Extension
+class ImageDeliveryExtension extends \Twig_Extension
 {
 
   /**
@@ -22,6 +23,8 @@ class BaseUrlExtension extends \Twig_Extension
   {
     return array(
       new \Twig_SimpleFilter('src', array($this, 'srcFilter')),
+      new \Twig_SimpleFilter('srcRated', array($this, 'srcRatedFilter')),
+      new \Twig_SimpleFilter('srcRatedUser', array($this, 'srcRatedUserFilter')),
     );
   }
 
@@ -34,9 +37,19 @@ class BaseUrlExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function srcFilter(Deliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function srcFilter(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     $this->imageDeliveryHelper->src($image, $format, $duration, $clientId, $clientSecret);
+  }
+
+  public function srcRatedFilter(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  {
+    $this->imageDeliveryHelper->srcRated($image, $format, $duration, $clientId, $clientSecret);
+  }
+
+  public function srcRatedUserFilter(ImageDeliverable $image, UserReceivable $user, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  {
+    $this->imageDeliveryHelper->srcRatedForUser($user, $image, $format, $duration, $clientId, $clientSecret);
   }
 
 }
