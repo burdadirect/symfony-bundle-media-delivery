@@ -5,7 +5,7 @@ services:
 
     # TWIG
     hbm.twig_extensions.image_delivery:
-        class: HBM\TwigExtensionsBundle\Twig\ImageDeliveryExtension
+        class: HBM\ImageDeliveryBundle\Twig\ImageDeliveryExtension
         arguments: ["@hbm.image_delivery.helper"]
         tags:
             - { name: twig.extension }
