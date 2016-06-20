@@ -45,6 +45,7 @@ class Configuration implements ConfigurationInterface
           ->prototype('array')
             ->children()
               ->scalarNode('format')->end()
+              ->scalarNode('default')->defaultFalse()->end()
               ->scalarNode('w')->defaultValue(1500)->info('Can be pixel or percent.')->end()
               ->scalarNode('h')->defaultValue(1500)->info('Can be pixel or percent.')->end()
               ->scalarNode('type')->defaultValue('jpg')->info('Can be "jpg" or "png".')->end()

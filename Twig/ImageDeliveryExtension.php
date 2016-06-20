@@ -37,17 +37,17 @@ class ImageDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function srcFilter(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function srcFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     $this->imageDeliveryHelper->src($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function srcRatedFilter(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function srcRatedFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     $this->imageDeliveryHelper->srcRated($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function srcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function srcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     $this->imageDeliveryHelper->srcRatedForUser($user, $image, $format, $duration, $clientId, $clientSecret);
   }

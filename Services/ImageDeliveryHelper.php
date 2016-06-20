@@ -34,14 +34,14 @@ class ImageDeliveryHelper {
    * Returns an image url.
    *
    * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
-   * @param $format
-   * @param null $duration
-   * @param null $clientId
-   * @param null $clientSecret
+   * @param string|NULL $format
+   * @param string|integer|NULL $duration
+   * @param string|NULL $clientId
+   * @param string|NULL $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function src(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function src(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientId === NULL) {
@@ -63,10 +63,19 @@ class ImageDeliveryHelper {
     }
 
     // FORMAT
-    if (!isset($this->config['formats'][$format])) {
-      throw new \Exception('Format "'.$format.'" not found.');
+    $formatToUse = $format;
+    if ($format === NULL) {
+      foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+        if ($formatConfig['default']) {
+          $formatToUse = $formatKey;
+        }
+      }
     }
-    $formatConfigToUse = $this->config['formats'][$format];
+
+    if (!isset($this->config['formats'][$formatToUse])) {
+      throw new \Exception('Format "'.$formatToUse.'" not found.');
+    }
+    $formatConfigToUse = $this->config['formats'][$formatToUse];
 
     // TIME AND DURATION
     $timeAndDuration = $this->getTimeAndDuration($duration);
@@ -75,14 +84,14 @@ class ImageDeliveryHelper {
     $file = ltrim($image->getFile(), '/');
 
     // CUSTOM
-    $custom = $image->hasClipping($this->formatPlain($format));
+    $custom = $image->hasClipping($this->formatPlain($formatToUse));
 
     $signature = $this->getSignature(
       $file,
       $image->getId(),
       $timeAndDuration['time'],
       $timeAndDuration['duration'],
-      $format,
+      $formatToUse,
       intval($custom),
       $clientIdToUse,
       $clientSecretToUse
@@ -97,7 +106,7 @@ class ImageDeliveryHelper {
     ];
 
     $paramsRoute = [
-      'format' => $format,
+      'format' => $formatToUse,
       'id' => $image->getId(),
       'file' => $file,
     ];
@@ -114,30 +123,30 @@ class ImageDeliveryHelper {
    * Returns an image url, depending of image settings.
    *
    * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
-   * @param $format
-   * @param null $duration
-   * @param null $clientId
-   * @param null $clientSecret
+   * @param string|NULL $format
+   * @param string|integer|NULL $duration
+   * @param string|NULL $clientId
+   * @param string|NULL $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function srcRated(ImageDeliverable $image, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function srcRated(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     return $this->src($image, $this->formatAdjusted($image, $format), $duration, $clientId, $clientSecret);
   }
 
   /**
    * Returns an image url, depending on user settings.
    *
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable $user
    * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
-   * @param $format
-   * @param $duration
-   * @param null $clientId
-   * @param null $clientSecret
+   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable|NULL $user
+   * @param string|NULL $format
+   * @param string|integer|NULL $duration
+   * @param string|NULL $clientId
+   * @param string|NULL $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function srcRatedForUser(UserReceivable $user, ImageDeliverable $image, $format, $duration, $clientId = NULL, $clientSecret = NULL) {
+  public function srcRatedForUser(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     if ($user && $user->getNoFsk() && ($image->getFsk() < 21)) {
       return $this->src($image, $format, $duration, $clientId, $clientSecret);
     } else {
