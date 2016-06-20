@@ -49,7 +49,7 @@ class ImageDeliveryExtension extends \Twig_Extension
 
   public function srcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
-    $this->imageDeliveryHelper->srcRatedForUser($user, $image, $format, $duration, $clientId, $clientSecret);
+    $this->imageDeliveryHelper->srcRatedForUser($image, $user, $format, $duration, $clientId, $clientSecret);
   }
 
 }

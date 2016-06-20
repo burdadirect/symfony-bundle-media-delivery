@@ -45,9 +45,9 @@ class ImageDeliveryHelper {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientId === NULL) {
-      foreach ($this->config['clients'] as $clientConfig) {
+      foreach ($this->config['clients'] as $clientKey => $clientConfig) {
         if ($clientConfig['default']) {
-          $clientIdToUse = $clientConfig['id'];
+          $clientIdToUse = $clientKey;
         }
       }
     }
@@ -55,11 +55,11 @@ class ImageDeliveryHelper {
     // CLIENT SECRET
     $clientSecretToUse = $clientSecret;
     if ($clientSecret === NULL) {
-      if (!isset($this->config['clients'][$clientId])) {
-        throw new \Exception('Client "'.$clientId.'" not found.');
+      if (!isset($this->config['clients'][$clientIdToUse])) {
+        throw new \Exception('Client "'.$clientIdToUse.'" not found.');
       }
 
-      $clientSecretToUse = $this->config['clients'][$clientId]['secret'];
+      $clientSecretToUse = $this->config['clients'][$clientIdToUse]['secret'];
     }
 
     // FORMAT
@@ -101,7 +101,7 @@ class ImageDeliveryHelper {
       'sig' => $signature,
       'ts' => $timeAndDuration['time'],
       'sec' => $timeAndDuration['duration'],
-      'client' => $clientId,
+      'client' => $clientIdToUse,
       'custom' => intval($custom),
     ];
 
