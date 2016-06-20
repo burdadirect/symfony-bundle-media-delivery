@@ -24,7 +24,7 @@ class ImageDeliveryExtension extends \Twig_Extension
     return array(
       new \Twig_SimpleFilter('src', array($this, 'srcFilter')),
       new \Twig_SimpleFilter('srcRated', array($this, 'srcRatedFilter')),
-      new \Twig_SimpleFilter('srcRatedUser', array($this, 'srcRatedUserFilter')),
+      new \Twig_SimpleFilter('srcRatedForUser', array($this, 'srcRatedUserFilter')),
     );
   }
 
@@ -47,7 +47,7 @@ class ImageDeliveryExtension extends \Twig_Extension
     $this->imageDeliveryHelper->srcRated($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function srcRatedUserFilter(ImageDeliverable $image, UserReceivable $user, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function srcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user, $format, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     $this->imageDeliveryHelper->srcRatedForUser($user, $image, $format, $duration, $clientId, $clientSecret);
   }
