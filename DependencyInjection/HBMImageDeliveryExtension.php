@@ -21,7 +21,7 @@ class HBMImageDeliveryExtension extends Extension {
     $configuration = new Configuration();
     $config = $this->processConfiguration($configuration, $configs);
 
-    $configToUse = $config['hbm']['image_delivery'];
+    $configToUse = $config['hbm_image_delivery'];
 
     $container->setParameter('hbm.image_delivery', $configToUse);
     $container->setParameter('hbm.image_delivery.settings.route', $configToUse['settings']['route']);
