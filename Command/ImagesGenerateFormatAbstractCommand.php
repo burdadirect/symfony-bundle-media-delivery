@@ -11,16 +11,18 @@ use Imagine\Imagick\Image;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Box;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Filesystem\Filesystem;
 
-abstract class ImagesGenerateFormatAbstractCommand extends ContainerAwareCommand
+abstract class ImagesGenerateFormatAbstractCommand extends AbstractCommand
 {
 
   protected function generate($path_orig, $path_cache, $settings) {
+    $filesystem = new Filesystem();
+
     // Make dir
     $pathinfo = pathinfo($path_cache);
-    if (!$this->getFilesystem()->exists($pathinfo['dirname'])) {
-      $this->pbyMkdir($pathinfo['dirname']);
+    if (!$filesystem->exists($pathinfo['dirname'])) {
+      $this->hbmMkdir($pathinfo['dirname']);
     }
 
     // Make image

@@ -12,29 +12,24 @@ use Imagine\Image\Point;
 class ImagesGenerateFormatCommand extends ImagesGenerateFormatAbstractCommand
 {
 
-  protected $serialExecution  = FALSE;
-  protected $asyncExecution   = FALSE;
-  protected $noLogging        = FALSE;
-  protected $enlargeResources = TRUE;
+  protected function configure() {
+    $this
+      ->setName('pbp:images:generate-format')
+      ->setDescription('Generate a specific format for a images.')
 
-	protected function configure() {
-		$this
-		->setName('pbp:images:generate-format')
-		->setDescription('Generate a specific format for a images.')
+      ->addArgument('format',     InputArgument::REQUIRED, 'The format to generate.')
+      ->addArgument('image',      InputArgument::REQUIRED, 'The id of the image.')
+      ->addArgument('path-orig',  InputArgument::REQUIRED, 'The path of the original image.')
+      ->addArgument('path-cache', InputArgument::REQUIRED, 'The path of the cached image.')
+      ->addOption('custom',   NULL, InputOption::VALUE_NONE, 'Look in the database for a custom image clipping.')
+      ->addOption('retina',   NULL, InputOption::VALUE_NONE, 'Use twice the width and height for resizing.')
+      ->addOption('blur',     NULL, InputOption::VALUE_OPTIONAL, 'Blur the image with this value (percent of the sqrt(width*height)).')
+      ->addOption('overlay',  NULL, InputOption::VALUE_OPTIONAL, 'Overlay the given image.')
+      ->addOption('oGravity', NULL, InputOption::VALUE_OPTIONAL, 'Align the overlay (1 = top left, 2 = top center, ..., 5 = center, ..., 9 = bottom right).')
+      ->addOption('oScale',   NULL, InputOption::VALUE_OPTIONAL, 'Scale the overlay (inset = scale to fit, orig = original size).');
+  }
 
-		->addArgument('format',     InputArgument::REQUIRED, 'The format to generate.')
-		->addArgument('image',      InputArgument::REQUIRED, 'The id of the image.')
-		->addArgument('path-orig',  InputArgument::REQUIRED, 'The path of the original image.')
-		->addArgument('path-cache', InputArgument::REQUIRED, 'The path of the cached image.')
-		->addOption('custom',   NULL, InputOption::VALUE_NONE, 'Look in the database for a custom image clipping.')
-		->addOption('retina',   NULL, InputOption::VALUE_NONE, 'Use twice the width and height for resizing.')
-		->addOption('blur',     NULL, InputOption::VALUE_OPTIONAL, 'Blur the image with this value (percent of the sqrt(width*height)).')
-		->addOption('overlay',  NULL, InputOption::VALUE_OPTIONAL, 'Overlay the given image.')
-		->addOption('oGravity', NULL, InputOption::VALUE_OPTIONAL, 'Align the overlay (1 = top left, 2 = top center, ..., 5 = center, ..., 9 = bottom right).')
-		->addOption('oScale',   NULL, InputOption::VALUE_OPTIONAL, 'Scale the overlay (inset = scale to fit, orig = original size).');
-	}
-
-	protected function executeLogic(InputInterface $input, OutputInterface $output) {
+  protected function executeLogic(InputInterface $input, OutputInterface $output) {
     // Get arguments for custom clippings
     $format = $input->getArgument('format');
     $image = $input->getArgument('image');
@@ -77,7 +72,7 @@ class ImagesGenerateFormatCommand extends ImagesGenerateFormatAbstractCommand
     }
 
     return 0;
-	}
+  }
 
   /**
    * Adds several metadata in exif format to image.
