@@ -21,9 +21,12 @@ class HBMImageDeliveryExtension extends Extension {
     $configuration = new Configuration();
     $config = $this->processConfiguration($configuration, $configs);
 
-    $container->setParameter('hbm_image_delivery', $config['hbm_image_delivery']);
-    $container->setParameter('hbm_image_delivery.settings.route', $config['hbm_image_delivery']['settings']['route']);
-    $container->setParameter('hbm_image_delivery.formats', $config['hbm_image_delivery']['formats']);
+    $configToUse = $config['hbm']['image_delivery'];
+
+    $container->setParameter('hbm.image_delivery', $configToUse);
+    $container->setParameter('hbm.image_delivery.settings.route', $configToUse['settings']['route']);
+    $container->setParameter('hbm.image_delivery.formats', $configToUse['formats']);
+    $container->setParameter('hbm.image_delivery.clients', $configToUse['clients']);
 
     $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
     $loader->load('services.yml');
