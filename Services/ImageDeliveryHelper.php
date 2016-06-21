@@ -41,10 +41,10 @@ class ImageDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function src(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
-    if ($clientId === NULL) {
+    if ($clientIdToUse === NULL) {
       foreach ($this->config['clients'] as $clientKey => $clientConfig) {
         if ($clientConfig['default']) {
           $clientIdToUse = $clientKey;
@@ -54,7 +54,7 @@ class ImageDeliveryHelper {
 
     // CLIENT SECRET
     $clientSecretToUse = $clientSecret;
-    if ($clientSecret === NULL) {
+    if ($clientSecretToUse === NULL) {
       if (!isset($this->config['clients'][$clientIdToUse])) {
         throw new \Exception('Client "'.$clientIdToUse.'" not found.');
       }
@@ -64,7 +64,7 @@ class ImageDeliveryHelper {
 
     // FORMAT
     $formatToUse = $format;
-    if ($format === NULL) {
+    if ($formatToUse === NULL) {
       foreach ($this->config['formats'] as $formatKey => $formatConfig) {
         if ($formatConfig['default']) {
           $formatToUse = $formatKey;
@@ -72,10 +72,11 @@ class ImageDeliveryHelper {
       }
     }
 
-    if (!isset($this->config['formats'][$formatToUse])) {
-      throw new \Exception('Format "'.$formatToUse.'" not found.');
+    $formatToUsePlain = $this->getFormatPlain($formatToUse);
+    if (!isset($this->config['formats'][$formatToUsePlain])) {
+      throw new \Exception('Format "'.$formatToUsePlain.'" not found.');
     }
-    $formatConfigToUse = $this->config['formats'][$formatToUse];
+    $formatConfigToUse = $this->config['formats'][$formatToUsePlain];
 
     // TIME AND DURATION
     $timeAndDuration = $this->getTimeAndDuration($duration);
@@ -84,7 +85,7 @@ class ImageDeliveryHelper {
     $file = ltrim($image->getFile(), '/');
 
     // CUSTOM
-    $custom = $image->hasClipping($this->formatPlain($formatToUse));
+    $custom = $image->hasClipping($formatToUsePlain);
 
     $signature = $this->getSignature(
       $file,
@@ -130,8 +131,8 @@ class ImageDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function srcRated(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
-    return $this->src($image, $this->formatAdjusted($image, $format), $duration, $clientId, $clientSecret);
+  public function getSrcRated(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+    return $this->getSrc($image, $this->getFormatAdjusted($image, $format), $duration, $clientId, $clientSecret);
   }
 
   /**
@@ -146,11 +147,11 @@ class ImageDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function srcRatedForUser(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrcRatedForUser(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     if ($user && $user->getNoFsk() && ($image->getFsk() < 21)) {
-      return $this->src($image, $format, $duration, $clientId, $clientSecret);
+      return $this->getSrc($image, $format, $duration, $clientId, $clientSecret);
     } else {
-      return $this->srcRated($image, $format, $duration, $clientId, $clientSecret);
+      return $this->getSrcRated($image, $format, $duration, $clientId, $clientSecret);
     }
   }
 
@@ -190,7 +191,7 @@ class ImageDeliveryHelper {
    * @param $format
    * @return string
    */
-  public function formatPlain($format) {
+  public function getFormatPlain($format) {
     $formatOrig = $format;
     if (substr($formatOrig, -7) === '-retina') {
       $formatOrig = substr($formatOrig, 0, -7);
@@ -212,7 +213,7 @@ class ImageDeliveryHelper {
    * @param $format
    * @return string
    */
-  public function formatAdjusted(ImageDeliverable $image, $format) {
+  public function getFormatAdjusted(ImageDeliverable $image, $format) {
     $formatsToWatermark = [];
     foreach ($this->config['formats'] as $formatKey => $formatConfig) {
       if ($formatConfig['watermark']) {
@@ -252,6 +253,27 @@ class ImageDeliveryHelper {
     $stringToSign .= $clientId."\n";
 
     return base64_encode(hash_hmac('sha256', $stringToSign, $clientSecret, true));
+  }
+
+  public function getFileCache($file, $format) {
+    $formatPlain = $this->getFormatPlain($format);
+    if (!isset($this->config['formats'][$formatPlain])) {
+      throw new \Exception('Format "'.$formatPlain.'" not found.');
+    }
+    $formatConfig = $this->config['formats'][$formatPlain];
+
+    $dirCache = $this->config['folders']['cache'];
+    $dirCache = str_replace('\\', '/', $dirCache);
+    $dirCache = rtrim($dirCache, '/');
+
+    $fileCache = $dirCache.$format.'/'.ltrim($file, '/');
+    if (($formatConfig['type'] === 'png') && (substr($fileCache, -4) === '.jpg')) {
+      $fileCache = substr($fileCache, 0, -4).'.png';
+    } elseif (($formatConfig['type'] === 'png') && (substr($fileCache, -5) === '.jpeg')) {
+      $fileCache = substr($fileCache, 0, -5).'.png';
+    }
+
+    return $fileCache;
   }
 
 }
