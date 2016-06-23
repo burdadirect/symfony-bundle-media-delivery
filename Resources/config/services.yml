@@ -1,11 +1,11 @@
 services:
-    hbm.image_delivery.helper:
+    hbm.helper.image_delivery:
         class: HBM\ImageDeliveryBundle\Services\ImageDeliveryHelper
-        arguments: ["%hbm.image_delivery%", "@router", "@logger"]
+        arguments: ["%hbm.image_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger"]
 
     # TWIG
     hbm.twig_extensions.image_delivery:
         class: HBM\ImageDeliveryBundle\Twig\ImageDeliveryExtension
-        arguments: ["@hbm.image_delivery.helper"]
+        arguments: ["@hbm.helper.image_delivery"]
         tags:
             - { name: twig.extension }

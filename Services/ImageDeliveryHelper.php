@@ -1,6 +1,8 @@
 <?php
 namespace HBM\ImageDeliveryBundle\Services;
 
+use HBM\HelperBundle\Services\HmacHelper;
+use HBM\HelperBundle\Services\SanitizingHelper;
 use HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable;
 use HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable;
 use Symfony\Bridge\Monolog\Logger;
@@ -18,14 +20,22 @@ class ImageDeliveryHelper {
    */
   private $config;
 
+  /** @var \HBM\HelperBundle\Services\SanitizingHelper */
+  private $sanitizingHelper;
+
+  /** @var \HBM\HelperBundle\Services\HmacHelper */
+  private $hmacHelper;
+
   /** @var \Symfony\Component\Routing\Router */
   private $router;
 
   /** @var \Symfony\Bridge\Monolog\Logger */
   private $logger;
 
-  public function __construct($config, Router $router, Logger $logger) {
+  public function __construct($config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, Router $router, Logger $logger) {
     $this->config = $config;
+    $this->sanitizingHelper = $sanitizingHelper;
+    $this->hmacHelper = $hmacHelper;
     $this->router = $router;
     $this->logger = $logger;
   }
@@ -72,6 +82,12 @@ class ImageDeliveryHelper {
       }
     }
 
+    // DURATION
+    $durationToUse = $duration;
+    if ($durationToUse === NULL) {
+      $durationToUse = $this->config['settings']['duration'];
+    }
+
     $formatToUsePlain = $this->getFormatPlain($formatToUse);
     if (!isset($this->config['formats'][$formatToUsePlain])) {
       throw new \Exception('Format "'.$formatToUsePlain.'" not found.');
@@ -79,13 +95,13 @@ class ImageDeliveryHelper {
     $formatConfigToUse = $this->config['formats'][$formatToUsePlain];
 
     // TIME AND DURATION
-    $timeAndDuration = $this->getTimeAndDuration($duration);
+    $timeAndDuration = $this->getTimeAndDuration($durationToUse);
 
     // FILE
-    $file = ltrim($image->getFile(), '/');
+    $file = $this->sanitizingHelper->ensureSep($image->getFile(), FALSE);
 
     // CUSTOM
-    $custom = $image->hasClipping($formatToUsePlain);
+    $custom = intval($image->hasClipping($formatToUsePlain));
 
     $signature = $this->getSignature(
       $file,
@@ -93,7 +109,7 @@ class ImageDeliveryHelper {
       $timeAndDuration['time'],
       $timeAndDuration['duration'],
       $formatToUse,
-      intval($custom),
+      $custom,
       $clientIdToUse,
       $clientSecretToUse
     );
@@ -103,7 +119,7 @@ class ImageDeliveryHelper {
       'ts' => $timeAndDuration['time'],
       'sec' => $timeAndDuration['duration'],
       'client' => $clientIdToUse,
-      'custom' => intval($custom),
+      'custom' => $custom,
     ];
 
     $paramsRoute = [
@@ -182,7 +198,10 @@ class ImageDeliveryHelper {
       }
     }
 
-    return array('time' => $time_to_use, 'duration' => $duration_to_use);
+    return [
+      'time' => intval($time_to_use),
+      'duration' => intval($duration_to_use)
+    ];
   }
 
   /**
@@ -204,6 +223,30 @@ class ImageDeliveryHelper {
     }
 
     return $formatOrig;
+  }
+
+  /**
+   * Check for retina/blurred/watermarked format
+   *
+   * @param $format
+   * @return string
+   */
+  public function getFormatSuffix($format) {
+    $formatSuffix = '';
+
+    if (substr($format, -8) === '-blurred') {
+      $formatSuffix = '_blurred';
+      $format = substr($format, 0, -8);
+    } elseif (substr($format, -12) === '-watermarked') {
+      $formatSuffix = '_watermarked';
+      $format = substr($format, 0, -12);
+    }
+
+    if (substr($format, -7) === '-retina') {
+      $formatSuffix = $formatSuffix.'__retina';
+    }
+
+    return $formatSuffix;
   }
 
   /**
@@ -252,28 +295,37 @@ class ImageDeliveryHelper {
     $stringToSign .= $custom."\n";
     $stringToSign .= $clientId."\n";
 
-    return base64_encode(hash_hmac('sha256', $stringToSign, $clientSecret, true));
+    return $this->hmacHelper->sign($stringToSign, $clientSecret);
   }
 
   public function getFileCache($file, $format) {
+    $pathinfo = pathinfo($file);
+
     $formatPlain = $this->getFormatPlain($format);
-    if (!isset($this->config['formats'][$formatPlain])) {
-      throw new \Exception('Format "'.$formatPlain.'" not found.');
-    }
-    $formatConfig = $this->config['formats'][$formatPlain];
+    $formatSuffix = $this->getFormatSuffix($format);
 
-    $dirCache = $this->config['folders']['cache'];
-    $dirCache = str_replace('\\', '/', $dirCache);
-    $dirCache = rtrim($dirCache, '/');
-
-    $fileCache = $dirCache.$format.'/'.ltrim($file, '/');
-    if (($formatConfig['type'] === 'png') && (substr($fileCache, -4) === '.jpg')) {
-      $fileCache = substr($fileCache, 0, -4).'.png';
-    } elseif (($formatConfig['type'] === 'png') && (substr($fileCache, -5) === '.jpeg')) {
-      $fileCache = substr($fileCache, 0, -5).'.png';
+    $formatConfig = [];
+    if (isset($this->config['formats'][$formatPlain])) {
+      $formatConfig = $this->config['formats'][$formatPlain];
     }
 
-    return $fileCache;
+    $folderCache = $this->sanitizingHelper->normalizeFolderRelative($formatPlain.$formatSuffix);
+    if ($pathinfo['dirname'] !== '.') {
+      $folderCache .= $this->sanitizingHelper->normalizeFolderRelative($pathinfo['dirname']);
+    }
+
+    $fileCache = $pathinfo['filename'].'.jpg';
+
+    // Use png as extension if needed.
+    if (isset($formatConfig['type'])) {
+      if (($formatConfig['type'] === 'png') && (substr($fileCache, -4) === '.jpg')) {
+        $fileCache = substr($fileCache, 0, -4).'.png';
+      } elseif (($formatConfig['type'] === 'png') && (substr($fileCache, -5) === '.jpeg')) {
+        $fileCache = substr($fileCache, 0, -5).'.png';
+      }
+    }
+
+    return $folderCache.$fileCache;
   }
 
 }

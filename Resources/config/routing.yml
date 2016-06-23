@@ -1,5 +1,5 @@
 hbm_image_delivery_src:
     path:     /%hbm.image_delivery.settings.route%/{format}/{id}/{file}
-    defaults: { _controller: HBMImageDeliveryBundle:Default:serve }
+    defaults: { _controller: HBMImageDeliveryBundle:Default:serve, format: null, id: null, file: null }
     requirements:
         file: .+
