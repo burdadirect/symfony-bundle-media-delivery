@@ -1,7 +1,8 @@
 <?php
 
-namespace HBM\ImageDeliveryBundle\DependencyInjection;
+namespace HBM\MediaDeliveryBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\ArrayNode;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -23,98 +24,160 @@ class Configuration implements ConfigurationInterface
     /** @var NodeDefinition $rootNode */
     $rootNode = $treeBuilder->root('hbm_image_delivery');
 
+    $overlayGravityInfo = 'Can be an integer between 1 and 9. ';
+    $overlayGravityInfo .= '1: top left, 2: top center, 3: top right, ';
+    $overlayGravityInfo .= '4: center left, 5: center center, 6: center right, ';
+    $overlayGravityInfo .= '7: bottom left, 8: bottom center, 9: bottom right';
+
+    $overlayScaleInfo = 'Can be inset, orig or a custom scale string. ';
+    $overlayScaleInfo .= 'The custom scale string has the following form: W|H|mode. ';
+    $overlayScaleInfo .= 'W/H can be: MVUS. ';
+    $overlayScaleInfo .= 'M (mode) can be: "^" = allow upscale / "" = exact ';
+    $overlayScaleInfo .= 'V (value) can be: any integer or "auto". ';
+    $overlayScaleInfo .= 'U (unit) can be: "%" or "px". ';
+    $overlayScaleInfo .= 'S (side) can be: "+" = long side / "-" = short side / "" = same side.';
+
     $rootNode
       ->children()
         ->scalarNode('translation_domain')->defaultFalse()->end()
-        ->arrayNode('folders')
-          ->children()
-            ->scalarNode('orig')->end()
-            ->scalarNode('cache')->end()
-          ->end()
-        ->end()
-        ->arrayNode('images')
-          ->children()
-            ->scalarNode('blurred')->end()
-            ->scalarNode('watermark')->end()
-            ->scalarNode('400')->end()
-            ->scalarNode('403')->end()
-            ->scalarNode('404')->end()
-            ->scalarNode('412')->end()
-          ->end()
-        ->end()
-        ->arrayNode('settings')->addDefaultsIfNotSet()
-          ->children()
-            ->scalarNode('entity_name')->end()
-            ->scalarNode('route')->defaultValue('imagecache')->end()
-            ->scalarNode('duration')->defaultValue('~1200')->info('Number of seconds to expose the image. Can be prefixed with "~" to support caching.')->end()
-            ->scalarNode('cache')->defaultValue(86400)->info('Number of seconds set the cache header to.')->end()
-            ->scalarNode('memory_limit')->defaultValue('512M')->info('Increase memory limit to support handling of large images.')->end()
-          ->end()
-        ->end()
-        ->arrayNode('x-sendfile')
-          ->children()
-            ->scalarNode('path')->end()
-            ->scalarNode('prefix')->defaultValue('protected-images')->end()
-          ->end()
-        ->end()
-        ->arrayNode('x-accel-redirect')
-          ->children()
-            ->scalarNode('path')->end()
-            ->scalarNode('prefix')->defaultValue('protected-images')->end()
-          ->end()
-        ->end()
-        ->arrayNode('clients')->defaultValue(array())->useAttributeAsKey('id')
-          ->prototype('array')
+
+        # VIDEO DELIVERY
+        ->arrayNode('video_delivery')
+          ->append($this->getClientConfig())
+          ->append($this->getSettingsConfig('video-delivery', '~1200', 86400, '512M'))
+          ->append($this->getFallbackConfig())
+          ->arrayNode('folders')
             ->children()
-              ->scalarNode('id')->end()
-              ->scalarNode('secret')->end()
-              ->scalarNode('default')->defaultFalse()->end()
+              ->scalarNode('orig')->end()
             ->end()
           ->end()
         ->end()
-        ->arrayNode('formats')->defaultValue(array())->useAttributeAsKey('name')
-          ->prototype('array')
+
+        # IMAGE DELIVERY
+        ->arrayNode('image_delivery')
+          ->append($this->getClientConfig())
+          ->append($this->getSettingsConfig('image-delivery', '~1200', 86400, '512M'))
+          ->append($this->getFallbackConfig())
+          ->arrayNode('folders')
             ->children()
-              ->scalarNode('format')->end()
-              ->scalarNode('default')->defaultFalse()->end()
-              ->scalarNode('w')->defaultValue(1500)->info('Can be pixel or percent.')->end()
-              ->scalarNode('h')->defaultValue(1500)->info('Can be pixel or percent.')->end()
-              ->scalarNode('type')->defaultValue('jpg')->info('Can be "jpg" or "png".')->end()
-              ->scalarNode('mode')->defaultValue('thumbnail')->info('Can be "thumbnail", "crop", "resize" or "canvas".')->end()
-              ->scalarNode('watermark')->defaultFalse()->info('These formats should be watermarked.')->end()
-              ->scalarNode('restricted')->defaultTrue()->info('These formats should be delivered only when hash is valid.')->end()
-              ->arrayNode('quality')
-                ->children()
-                  ->scalarNode('jpg')->defaultValue(80)->info('Can be between 0 and 100.')->end()
-                  ->scalarNode('png')->defaultValue(7)->info('Can be between 0 and 10.')->end()
+              ->scalarNode('orig')->end()
+              ->scalarNode('cache')->end()
+            ->end()
+          ->end()
+          ->arrayNode('overlays')->addDefaultsIfNotSet()
+            ->children()
+              ->append($this->getOverlayConfig('blurred', 5, NULL, 5, $overlayGravityInfo, '100%%|100%%|', 'Scale to fit. '.$overlayScaleInfo))
+              ->append($this->getOverlayConfig('watermarked', 0, NULL, 9, $overlayGravityInfo, '30%%+|auto|', 'Use 30% of long side for width, scale height according to aspect ratio. '.$overlayScaleInfo))
+            ->end()
+          ->end()
+          ->arrayNode('formats')->defaultValue(array())->useAttributeAsKey('name')
+            ->prototype('array')
+              ->children()
+                ->scalarNode('format')->end()
+                ->scalarNode('default')->defaultFalse()->end()
+                ->scalarNode('w')->defaultValue(1500)->info('Can be pixel or percent.')->end()
+                ->scalarNode('h')->defaultValue(1500)->info('Can be pixel or percent.')->end()
+                ->scalarNode('type')->defaultValue('jpg')->info('Can be "jpg" or "png".')->end()
+                ->scalarNode('mode')->defaultValue('thumbnail')->info('Can be "thumbnail", "crop", "resize" or "canvas".')->end()
+                ->scalarNode('watermark')->defaultFalse()->info('These formats should be watermarked.')->end()
+                ->scalarNode('restricted')->defaultTrue()->info('These formats should be delivered only when hash is valid.')->end()
+                ->arrayNode('quality')
+                  ->children()
+                    ->scalarNode('jpg')->defaultValue(80)->info('Can be between 0 and 100.')->end()
+                    ->scalarNode('png')->defaultValue(7)->info('Can be between 0 and 10.')->end()
+                  ->end()
                 ->end()
+                ->scalarNode('exif')->defaultValue(0)->info('Needs "exiftool" to be installed.')->end()
               ->end()
-              ->scalarNode('exif')->defaultValue(0)->info('Needs "exiftool" to be installed.')->end()
             ->end()
           ->end()
-        ->end()
-        ->arrayNode('exif')->addDefaultsIfNotSet()
-          ->children()
-            ->scalarNode('company')->defaultValue('')->end()
-            ->scalarNode('company_short')->defaultValue('')->end()
-            ->scalarNode('product')->defaultValue('')->end()
-            ->scalarNode('url')->defaultValue('')->end()
-            ->scalarNode('notice')->defaultValue('')->end()
-            ->scalarNode('email')->defaultValue('')->end()
-            ->scalarNode('telephone')->defaultValue('')->end()
-            ->scalarNode('contact')->defaultValue('')->end()
-            ->scalarNode('street')->defaultValue('')->end()
-            ->scalarNode('city')->defaultValue('')->end()
-            ->scalarNode('zip')->defaultValue('')->end()
-            ->scalarNode('region')->defaultValue('')->end()
-            ->scalarNode('country')->defaultValue('')->end()
-            ->scalarNode('countryCode')->defaultValue('')->end()
+          ->arrayNode('exif')->addDefaultsIfNotSet()
+            ->children()
+              ->scalarNode('company')->defaultValue('')->end()
+              ->scalarNode('company_short')->defaultValue('')->end()
+              ->scalarNode('product')->defaultValue('')->end()
+              ->scalarNode('url')->defaultValue('')->end()
+              ->scalarNode('notice')->defaultValue('')->end()
+              ->scalarNode('email')->defaultValue('')->end()
+              ->scalarNode('telephone')->defaultValue('')->end()
+              ->scalarNode('contact')->defaultValue('')->end()
+              ->scalarNode('street')->defaultValue('')->end()
+              ->scalarNode('city')->defaultValue('')->end()
+              ->scalarNode('zip')->defaultValue('')->end()
+              ->scalarNode('region')->defaultValue('')->end()
+              ->scalarNode('country')->defaultValue('')->end()
+              ->scalarNode('countryCode')->defaultValue('')->end()
+            ->end()
           ->end()
         ->end()
       ->end()
     ->end();
 
     return $treeBuilder;
+  }
+
+  private function getOverlayConfig($overlayName, $blurDefault, $blurInfo, $gravityDefault, $gravityInfo, $scaleDefault, $scaleInfo) {
+    $builder = new TreeBuilder();
+    $node = $builder->root($overlayName);
+
+    $node
+      ->children()
+        ->scalarNode('blur')->defaultValue($blurDefault)->info($blurInfo)->end()
+        ->scalarNode('file')->isRequired()->end()
+        ->scalarNode('gravity')->defaultValue($gravityDefault)->info($gravityInfo)->end()
+        ->scalarNode('scale')->defaultValue($scaleDefault)->info($scaleInfo)->end()
+      ->end();
+
+    return $node;
+  }
+
+  private function getClientConfig() {
+    $builder = new TreeBuilder();
+    $node = $builder->root('clients');
+
+    $node
+      ->defaultValue(array())->useAttributeAsKey('id')
+      ->prototype('array')
+        ->children()
+          ->scalarNode('id')->end()
+          ->scalarNode('secret')->end()
+          ->scalarNode('default')->defaultFalse()->end()
+        ->end()
+      ->end();
+
+    return $node;
+  }
+
+  private function getSettingsConfig($routeDefault, $durationDefault, $cacheDefault, $memoryLimitDefault) {
+    $builder = new TreeBuilder();
+    $node = $builder->root('settings');
+
+    $node
+      ->addDefaultsIfNotSet()
+      ->children()
+        ->scalarNode('entity_name')->end()
+        ->scalarNode('route')->defaultValue($routeDefault)->end()
+        ->scalarNode('duration')->defaultValue($durationDefault)->info('Number of seconds to expose the media file. Can be prefixed with "~" to support caching.')->end()
+        ->scalarNode('cache')->defaultValue($cacheDefault)->info('Number of seconds set the cache header to.')->end()
+        ->scalarNode('memory_limit')->defaultValue($memoryLimitDefault)->info('Increase memory limit to support handling of large media files.')->end()
+        ->scalarNode('x_accel_redirect')->defaultValue('')->info('Improves delivery performance on nginx servers.')->end()
+      ->end();
+
+    return $node;
+  }
+
+  private function getFallbackConfig() {
+    $builder = new TreeBuilder();
+    $node = $builder->root('fallbacks');
+
+    $node
+      ->children()
+        ->scalarNode('403')->defaultNull()->end()
+        ->scalarNode('404')->defaultNull()->end()
+        ->scalarNode('412')->defaultNull()->end()
+      ->end();
+
+    return $node;
   }
 
 }

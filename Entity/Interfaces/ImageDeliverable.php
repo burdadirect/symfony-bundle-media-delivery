@@ -1,6 +1,6 @@
 <?php
 
-namespace HBM\ImageDeliveryBundle\Entity\Interfaces;
+namespace HBM\MediaDeliveryBundle\Entity\Interfaces;
 
 
 interface ImageDeliverable {

@@ -1,6 +1,6 @@
 {
-  "name": "burdanews/image-delivery-bundle",
-  "description": "HBM Image Delivery Bundle - Resize, crop, watermark and generally modify images and deliver them securely.",
+  "name": "burdanews/media-delivery-bundle",
+  "description": "HBM Media Delivery Bundle - Resize, crop, watermark and generally modify images and deliver them securely.",
   "author" : [{
     "name" : "Christian Puchinger",
     "email" : "puchinger@burda.com"
@@ -8,12 +8,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:burdanews/image-delivery-bundle.git"
+    "url": "git@github.com:burdanews/media-delivery-bundle.git"
   },
   "type": "symfony-bundle",
   "autoload": {
     "psr-0": {
-      "HBM\\ImageDeliveryBundle": ""
+      "HBM\\MediaDeliveryBundle": ""
     }
   },
   "repositories" : [
@@ -32,5 +32,5 @@
   "require-dev": {
     "php": ">=7.0"
   },
-  "target-dir": "HBM/ImageDeliveryBundle"
+  "target-dir": "HBM/MediaDeliveryBundle"
 }

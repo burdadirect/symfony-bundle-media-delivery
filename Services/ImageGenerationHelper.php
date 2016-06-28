@@ -1,6 +1,5 @@
 <?php
-
-namespace HBM\ImageDeliveryBundle\Command;
+namespace HBM\MediaDeliveryBundle\Services;
 
 use Imagine\Image\Palette\Grayscale;
 use Imagine\Image\ImageInterface;
@@ -11,12 +10,15 @@ use Imagine\Imagick\Image;
 use Imagine\Imagick\Imagine;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Box;
-use Neutron\TemporaryFilesystem\IOException;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
-abstract class ImageDeliveryGenerateFormatAbstractCommand extends ContainerAwareCommand
-{
+/**
+ * Service
+ *
+ * Makes image gernation easy.
+ */
+class ImageGenerationHelper {
 
   /**
    * @var Filesystem
@@ -58,20 +60,9 @@ abstract class ImageDeliveryGenerateFormatAbstractCommand extends ContainerAware
     }
   }
 
-  protected function enlargeResources() {
-    //error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    ini_set('memory_limit', '2G');
-
-    if ($this->getContainer()->has('profiler')) {
-      $this->getContainer()->get('profiler')->disable();
-    }
-  }
-
   /****************************************************************************/
 
-  protected function generate($path_orig, $path_cache, $settings) {
+  public function generate($path_orig, $path_cache, $settings) {
     $filesystem = new Filesystem();
 
     // Make dir
@@ -91,6 +82,8 @@ abstract class ImageDeliveryGenerateFormatAbstractCommand extends ContainerAware
       $this->pbyResize($path_orig, $path_cache, $settings);
     }
   }
+
+
 
   protected function handleColorProfiles(Image $image) {
     try {

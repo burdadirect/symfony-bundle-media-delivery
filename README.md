@@ -37,7 +37,7 @@ class AppKernel extends Kernel
         $bundles = array(
             // ...
 
-            new HBM\ImageDeliveryBundle\HBMImageDeliveryBundle(),
+            new HBM\MediaDeliveryBundle\HBMImageDeliveryBundle(),
         );
 
         // ...
@@ -50,25 +50,72 @@ class AppKernel extends Kernel
 ### Configuration
 
 ```yml
-hbm_image_delivery:
-    settings:
-        route:    "imagecache"
-        duration: "~1200"
-    formats:
-        orig:               { w: 100%, h: 100%, quality: { jpg: 95, png: 9 }, exif: 1, watermark: 0, restricted: 1, type: png, mode: resize }
-        full:               { w: 2500, h: 2500, quality: { jpg: 90, png: 8 }, exif: 1, watermark: 1, restricted: 1, type: jpg, mode: thumbnail }
-        gallery:            { w: 1500, h: 1500, quality: { jpg: 90, png: 8 }, exif: 1, watermark: 1, restricted: 1, type: jpg, mode: thumbnail }
-        thumb:              { w: 500,  h: 500,  quality: { jpg: 80, png: 7 }, exif: 0, watermark: 0, restricted: 0, type: jpg, mode: thumbnail }
-        thumb-square-trans: { w: 500,  h: 500,  quality: { jpg: 80, png: 7 }, exif: 0, watermark: 0, restricted: 0, type: png, mode: canvas }
-    clients:
-        playboy:
-            id:      playboy
-            secret:  xyz
-            default: true
-        opengraph:
-            id:      opengraph
-            secret:  xyz
-        google:
-            id:      google
-            secret:  xyz
+hbm_media_delivery:
+    video_delivery:
+        settings:
+            entity_name: "AcmeBundle:Video"
+            x_accel_redirect: 'protected-videos'
+    
+        folders:
+            orig: '%dir_videos%'
+    
+        clients:
+            - { id: "acme",  secret: "xyz",  default: true }
+
+
+    image_delivery:
+        settings:
+            entity_name: "AcmeBundle:Image"
+            route:       "protected-images"
+            duration:    "~1200"
+
+        folders:
+            orig: '%dir_images%'
+            cache: '%dir_images_cache%'
+            
+        fallbacks:
+            403: '%kernel.root_dir%/path/to/fallback_image_403.png'
+            404: '%kernel.root_dir%/path/to/fallback_image_404.png'
+            412: '%kernel.root_dir%/path/to/fallback_image_412.png'
+            
+        clients:
+            playboy:
+                id:      acme
+                secret:  xyz
+                default: true
+            opengraph:
+                id:      opengraph
+                secret:  xyz
+            google:
+                id:      google
+                secret:  xyz
+
+        overlays:
+            blurred:
+                file: '%kernel.root_dir%/path/to/overlay_blurred.png'
+            watermarked:
+                file: '%kernel.root_dir%/path/to/overlay_watermarked.png'
+
+        formats:
+            orig:               { w: 100%, h: 100%, quality: { jpg: 95, png: 9 }, exif: 1, watermark: 0, restricted: 1, type: png, mode: resize }
+            full:               { w: 2500, h: 2500, quality: { jpg: 90, png: 8 }, exif: 1, watermark: 1, restricted: 1, type: jpg, mode: thumbnail }
+            gallery:            { w: 1500, h: 1500, quality: { jpg: 90, png: 8 }, exif: 1, watermark: 1, restricted: 1, type: jpg, mode: thumbnail }
+            thumb:              { w: 500,  h: 500,  quality: { jpg: 80, png: 7 }, exif: 0, watermark: 0, restricted: 0, type: jpg, mode: thumbnail }
+            thumb-square-trans: { w: 500,  h: 500,  quality: { jpg: 80, png: 7 }, exif: 0, watermark: 0, restricted: 0, type: png, mode: canvas }
+
+        exif:
+            company:       "..."
+            company_short: "..."
+            product:       "..."
+            url:           "..."
+            notice:        "..."
+            email:         "..."
+            telephone:     "..."
+            street:        "..."
+            city:          "..."
+            zip:           "..."
+            region:        "..."
+            country:       "..."
+            countryCode:   "..."
+
 ```

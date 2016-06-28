@@ -1,10 +1,10 @@
 <?php
 
-namespace HBM\ImageDeliveryBundle\Twig;
+namespace HBM\MediaDeliveryBundle\Twig;
 
-use HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable;
-use HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable;
-use HBM\ImageDeliveryBundle\Services\ImageDeliveryHelper;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\UserReceivable;
+use HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper;
 
 class ImageDeliveryExtension extends \Twig_Extension
 {
@@ -22,9 +22,9 @@ class ImageDeliveryExtension extends \Twig_Extension
   public function getFilters()
   {
     return array(
-      new \Twig_SimpleFilter('src', array($this, 'srcFilter')),
-      new \Twig_SimpleFilter('srcRated', array($this, 'srcRatedFilter')),
-      new \Twig_SimpleFilter('srcRatedForUser', array($this, 'srcRatedForUserFilter')),
+      new \Twig_SimpleFilter('imgSrc', array($this, 'imgSrcFilter')),
+      new \Twig_SimpleFilter('imgSrcRated', array($this, 'imgSrcRatedFilter')),
+      new \Twig_SimpleFilter('imgSrcRatedForUser', array($this, 'imgSrcRatedForUserFilter')),
     );
   }
 
@@ -37,17 +37,17 @@ class ImageDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function srcFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->imageDeliveryHelper->getSrc($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function srcRatedFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcRatedFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->imageDeliveryHelper->getSrcRated($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function srcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->imageDeliveryHelper->getSrcRatedForUser($image, $user, $format, $duration, $clientId, $clientSecret);
   }

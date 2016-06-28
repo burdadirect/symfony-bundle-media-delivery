@@ -1,11 +1,25 @@
 services:
+    # HELPER
     hbm.helper.image_delivery:
-        class: HBM\ImageDeliveryBundle\Services\ImageDeliveryHelper
-        arguments: ["%hbm.image_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger"]
+        class: HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper
+        arguments: ["%hbm.image_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
+
+    hbm.helper.video_delivery:
+        class: HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper
+        arguments: ["%hbm.video_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
+
+    hbm.helper.image_generation:
+        class: HBM\MediaDeliveryBundle\Services\ImageGenerationHelper
 
     # TWIG
     hbm.twig_extensions.image_delivery:
-        class: HBM\ImageDeliveryBundle\Twig\ImageDeliveryExtension
+        class: HBM\MediaDeliveryBundle\Twig\ImageDeliveryExtension
         arguments: ["@hbm.helper.image_delivery"]
+        tags:
+            - { name: twig.extension }
+
+    hbm.twig_extensions.video_delivery:
+        class: HBM\MediaDeliveryBundle\Twig\VideoDeliveryExtension
+        arguments: ["@hbm.helper.video_delivery"]
         tags:
             - { name: twig.extension }

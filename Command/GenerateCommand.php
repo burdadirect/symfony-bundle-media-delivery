@@ -1,20 +1,22 @@
 <?php
 
-namespace HBM\ImageDeliveryBundle\Command;
+namespace HBM\MediaDeliveryBundle\Command;
 
-use HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\MediaDeliveryBundle\Services\ImageGenerationHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Imagine\Image\Point;
 
-class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbstractCommand
+class GenerateCommand extends AbstractCommand
 {
+
+  const name = 'hbm:image-delivery:generate';
 
   protected function configure() {
     $this
-      ->setName('hbm:image-delivery:generate-format')
+      ->setName(GenerateCommand::name)
       ->setDescription('Generate a specific format for an image.')
 
       ->addArgument('format',     InputArgument::REQUIRED, 'The format to generate.')
@@ -33,7 +35,6 @@ class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbst
     // Enlarge resources
     $this->enlargeResources();
 
-    file_put_contents('/Users/d429161/Development/Repositories/pby_playboyplus/var/test.txt', 'BLA');
 
     // Get arguments for custom clippings
     $format = $input->getArgument('format');
@@ -71,7 +72,7 @@ class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbst
       return 404;
     }
 
-    $this->generate($path_orig, $path_cache, $settings);
+    $this->getImageGenerationHelper()->generate($path_orig, $path_cache, $settings);
 
     if ($settings['exif']) {
       $this->addMetadata($path_cache, $imageObj, $output);
@@ -84,7 +85,7 @@ class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbst
    * Adds several metadata in exif format to image.
    *
    * @param $path
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
    */
   private function addMetadata($path, ImageDeliverable $image, OutputInterface $output = NULL) {
     $exif = $this->getContainer()->getParameter('hbm.image_delivery.exif');
@@ -202,7 +203,7 @@ class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbst
     exec($command);
   }
 
-  public static function determineArguments($format, $dummyImages) {
+  public static function determineArguments($format, $overlays) {
     $retina = 0;
     $blurred = 0;
     $overlay = FALSE;
@@ -211,15 +212,16 @@ class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbst
     $format_category = $format;
 
     if (substr($format, -8) === '-blurred') {
-      $blurred = 5;
-      $overlay = $dummyImages['blurred'];
-      $oGravity = 5; // center center
-      $oScale = '100%|100%|'; // scale to fit
+      $blurred  = $overlays['blurred']['blur'];
+      $overlay  = $overlays['blurred']['file'];
+      $oGravity = $overlays['blurred']['gravity'];
+      $oScale   = $overlays['blurred']['scale'];
       $format_category = substr($format, 0, -8);
     } elseif (substr($format, -12) === '-watermarked') {
-      $overlay = $dummyImages['watermark'];
-      $oGravity = 9; // bottom right
-      $oScale = '30%+|auto|'; // do not scale
+      $blurred  = $overlays['watermarked']['blur'];
+      $overlay  = $overlays['watermarked']['file'];
+      $oGravity = $overlays['watermarked']['gravity'];
+      $oScale   = $overlays['watermarked']['scale'];
       $format_category = substr($format, 0, -12);
     }
 
@@ -236,6 +238,13 @@ class ImageDeliveryGenerateFormatCommand extends ImageDeliveryGenerateFormatAbst
       '--oGravity'   => $oGravity,
       '--oScale'     => $oScale
     ];
+  }
+
+  /**
+   * @return ImageGenerationHelper
+   */
+  private function getImageGenerationHelper() {
+    return $this->getContainer()->get('hbm.helper.image_generation');
   }
 
 }

@@ -1,24 +1,36 @@
 <?php
-namespace HBM\ImageDeliveryBundle\Services;
+namespace HBM\MediaDeliveryBundle\Services;
 
 use HBM\HelperBundle\Services\HmacHelper;
 use HBM\HelperBundle\Services\SanitizingHelper;
-use HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable;
-use HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable;
+use HBM\MediaDeliveryBundle\Command\GenerateCommand;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\UserReceivable;
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Service
  *
  * Makes image delivery easy.
  */
-class ImageDeliveryHelper {
+class ImageDeliveryHelper extends AbstractDeliveryHelper {
 
-  /**
-   * @var array
-   */
+  /** @var array */
   private $config;
+
+  /** @var string */
+  private $env;
+
+  /** @var boolean */
+  private $debug = TRUE;
 
   /** @var \HBM\HelperBundle\Services\SanitizingHelper */
   private $sanitizingHelper;
@@ -32,18 +44,19 @@ class ImageDeliveryHelper {
   /** @var \Symfony\Bridge\Monolog\Logger */
   private $logger;
 
-  public function __construct($config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, Router $router, Logger $logger) {
+  public function __construct($config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, Router $router, Logger $logger, $env = 'prod') {
     $this->config = $config;
     $this->sanitizingHelper = $sanitizingHelper;
     $this->hmacHelper = $hmacHelper;
     $this->router = $router;
     $this->logger = $logger;
+    $this->env = $env;
   }
 
   /**
    * Returns an image url.
    *
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
    * @param string|NULL $format
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
@@ -139,7 +152,7 @@ class ImageDeliveryHelper {
   /**
    * Returns an image url, depending of image settings.
    *
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
    * @param string|NULL $format
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
@@ -154,8 +167,8 @@ class ImageDeliveryHelper {
   /**
    * Returns an image url, depending on user settings.
    *
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\UserReceivable|NULL $user
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\UserReceivable|NULL $user
    * @param string|NULL $format
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
@@ -172,36 +185,18 @@ class ImageDeliveryHelper {
   }
 
   /**
-   * Calculates time and duration for hmac signature.
-   * If duration is preceeded with a ~, an aproximated value is used.
+   * Get default format.
    *
-   * @param string|integer $duration
-   * @return array
+   * @return string
    */
-  public function getTimeAndDuration($duration) {
-    $time = time();
-
-    $time_to_use = $time;
-    $duration_to_use = $duration;
-    if (substr($duration, 0, 1) === '~') {
-      $duration_to_use = substr($duration, 1);
-
-      $time_to_use = $time;
-      if ($duration_to_use > 100000) {
-        $time_to_use = round($time / 10000) * 10000;
-      } elseif ($duration_to_use > 10000) {
-        $time_to_use = round($time / 1000) * 1000;
-      } elseif ($duration_to_use > 1000) {
-        $time_to_use = round($time / 100) * 100;
-      } elseif ($duration_to_use > 100) {
-        $time_to_use = round($time / 10) * 10;
+  public function getFormatDefault() {
+    foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+      if ($formatConfig['default']) {
+        return $formatKey;
       }
     }
 
-    return [
-      'time' => intval($time_to_use),
-      'duration' => intval($duration_to_use)
-    ];
+    return 'thumb';
   }
 
   /**
@@ -252,7 +247,7 @@ class ImageDeliveryHelper {
   /**
    * Check for retina/blurred/watermarked format.
    *
-   * @param \HBM\ImageDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
    * @param $format
    * @return string
    */
@@ -326,6 +321,240 @@ class ImageDeliveryHelper {
     }
 
     return $folderCache.$fileCache;
+  }
+
+  /**
+   * Dispatches a specific format for an image.
+   *
+   * @param string $format
+   * @param string|int $id
+   * @param string $file
+   * @param \Symfony\Component\HttpFoundation\Request|NULL $request
+   * @param \Symfony\Component\HttpKernel\Kernel|NULL $kernel
+   * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\Response
+   */
+  public function dispatch($format, $id, $file, Request $request = NULL, Kernel $kernel = NULL) {
+    if ($request === NULL) {
+      $request = Request::createFromGlobals();
+    }
+
+    /**************************************************************************/
+    /* VARIABLES                                                              */
+    /**************************************************************************/
+
+    $folders = $this->config['folders'];
+    $formats = $this->config['formats'];
+    $fallbacks = $this->config['fallbacks'];
+    $overlays = $this->config['overlays'];
+    $clients = $this->config['clients'];
+
+    $query = $request->query->all();
+
+    ini_set('memory_limit', $this->config['settings']['memory_limit']);
+
+    $dirOrig = $this->sanitizingHelper->normalizeFolderAbsolute($folders['orig']);
+    $dirCache = $this->sanitizingHelper->normalizeFolderAbsolute($folders['cache']);
+
+
+    /**************************************************************************/
+    /* CHECK PARAMS                                                           */
+    /**************************************************************************/
+
+    $arguments = GenerateCommand::determineArguments($format, $overlays);
+
+    $formatPlain = $this->getFormatPlain($format);
+
+    // ROUTE PARAMS
+    $invalidRequest = FALSE;
+    if ($format === NULL) {
+      if ($this->debug) {
+        $this->logger->error('Format is null.');
+      }
+      $invalidRequest = TRUE;
+    }
+    if ($id === NULL) {
+      if ($this->debug) {
+        $this->logger->error('ID is null.');
+      }
+      $invalidRequest = TRUE;
+    }
+    if ($file === NULL) {
+      if ($this->debug) {
+        $this->logger->error('File is null.');
+      }
+      $invalidRequest = TRUE;
+    }
+
+    // QUERY PARAMS
+    $keys = ['ts', 'sec', 'client', 'sig', 'custom'];
+    foreach ($keys as $key) {
+      if (!isset($query[$key])) {
+        if ($this->debug) {
+          $this->logger->error('Query param "'.$key.'" is missing.');
+        }
+        $invalidRequest = TRUE;
+      }
+    }
+
+    if (!isset($formats[$formatPlain])) {
+      if ($this->debug) {
+        $this->logger->error('Format is invalid.');
+      }
+      $invalidRequest = TRUE;
+    }
+
+    if ($invalidRequest) {
+      $formatDefault = $this->getFormatDefault();
+
+      return $this->generateAndServe(array_merge([
+        'image'      => NULL,
+        'path-orig'  => $fallbacks['412'],
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $formatDefault),
+        '--custom'   => false
+      ], $arguments), 412, $request, $kernel);
+    }
+
+
+    /******************************************************************************/
+    /* CHECK ACCESS                                                               */
+    /******************************************************************************/
+
+    $access = TRUE;
+    if ($formats[$formatPlain]['restricted']) {
+      if (!isset($clients[$query['client']])) {
+        if ($this->debug) {
+          $this->logger->error('Client is missing.');
+        }
+        $access = FALSE;
+      } elseif ($query['sig'] !== $this->getSignature($file, $id, $query['ts'], $query['sec'], $format, $query['custom'], $query['client'], $clients[$query['client']]['secret'])) {
+        if ($this->debug) {
+          $this->logger->error('Signature is invalid.');
+        }
+        $access = FALSE;
+      } elseif (($query['ts'] + $query['sec']) < time()) {
+        if ($this->debug) {
+          $this->logger->error('Timestamp is too old.');
+        }
+        $access = FALSE;
+      }
+    }
+
+    if (!$access) {
+      return $this->generateAndServe(array_merge([
+        'image'      => NULL,
+        'path-orig'  => $fallbacks['403'],
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['403']), $format),
+        '--custom'   => false,
+      ], $arguments), 403, $request, $kernel);
+    }
+
+    /******************************************************************************/
+    /* CHECK FOR FILE                                                             */
+    /******************************************************************************/
+
+    $fileOrig = $dirOrig.$file;
+    $fileCache = $dirCache.$this->getFileCache($file, $format);
+
+    if (file_exists($fileOrig)) {
+      return $this->generateAndServe(array_merge([
+        'image'      => $id,
+        'path-orig'  => $fileOrig,
+        'path-cache' => $fileCache,
+        '--custom'   => $query['custom'],
+      ], $arguments), 200, $request, $kernel);
+    } else {
+      if ($this->debug) {
+        $this->logger->error('Orig file can not be found.');
+      }
+      return $this->generateAndServe(array_merge([
+        'image'      => NULL,
+        'path-orig'  => $fallbacks['404'],
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['404']), $format),
+        '--custom'   => false,
+      ], $arguments), 404, $request, $kernel);
+    }
+  }
+
+  /**
+   * Serves (and generats) a specific format for an image.
+   *
+   * @param $arguments
+   * @param integer $statusCode
+   * @param \Symfony\Component\HttpFoundation\Request|NULL $request
+   * @param \Symfony\Component\HttpKernel\Kernel|NULL $kernel
+   * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\Response
+   */
+  public function generateAndServe($arguments, $statusCode, Request $request = NULL, Kernel $kernel = NULL) {
+    $file = $arguments['path-cache'];
+
+    /**************************************************************************/
+    /* GENERATE                                                               */
+    /**************************************************************************/
+
+    if (!file_exists($file)) {
+      $command = ['command' => GenerateCommand::name];
+      $arguments = array_merge($command, $arguments);
+
+      if ($kernel === NULL) {
+        $kernel = new \AppKernel($this->env, false);
+      }
+
+      $application = new Application($kernel);
+      $application->add(new GenerateCommand());
+      $application->setAutoExit(FALSE);
+
+      $input  = new ArrayInput($arguments);
+      $output = new BufferedOutput();
+
+      $command = $application->find('hbm:image-delivery:generate');
+      $command->run($input, $output);
+    }
+
+
+    /**************************************************************************/
+    /* HEADER                                                                 */
+    /**************************************************************************/
+
+    $cacheSec = $this->config['settings']['cache'];
+    $fileModificationTime = filemtime($file);
+
+    if ($request === NULL) {
+      $request = Request::createFromGlobals();
+    }
+    if ($request->headers->has('If-Modified-Since')) {
+      $ifModifiedSinceHeader = strtotime($request->headers->get('If-Modified-Since'));
+
+      if ($ifModifiedSinceHeader > $fileModificationTime) {
+        $response = new Response();
+        $response->setNotModified(TRUE);
+        return $response;
+      }
+    }
+
+    $headers = [
+      'Pragma' => 'private',
+      'Cache-Control' => 'max-age='.$cacheSec,
+      'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
+      'Last-Modified' => gmdate('D, d M Y H:i:s', $fileModificationTime).' GMT',
+      'Content-Type' => mime_content_type($file),
+      'Content-Disposition' => 'inline; filename="'.basename($file).'"',
+    ];
+
+
+    /**************************************************************************/
+    /* SERVE                                                                  */
+    /**************************************************************************/
+
+    if ($this->config['settings']['x_accel_redirect']) {
+      $prefix = $this->sanitizingHelper->ensureSep($this->config['settings']['x_accel_redirect'], TRUE, TRUE);
+      $path = $this->sanitizingHelper->ensureTrailingSep($this->config['folders']['cache']);
+      $pathServed = str_replace($path, $prefix, $file);
+
+      $headers['X-Accel-Redirect'] = $pathServed;
+      return new BinaryFileResponse($file, $statusCode, $headers);
+    }
+
+    return new BinaryFileResponse($file, $statusCode, $headers);
   }
 
 }
