@@ -37,7 +37,7 @@ class AppKernel extends Kernel
         $bundles = array(
             // ...
 
-            new HBM\MediaDeliveryBundle\HBMImageDeliveryBundle(),
+            new HBM\MediaDeliveryBundle\HBMediaDeliveryBundle(),
         );
 
         // ...
@@ -118,4 +118,16 @@ hbm_media_delivery:
             country:       "..."
             countryCode:   "..."
 
+```
+### Optimization
+
+If you want to further improve delivery performance, get rid of the bootstrapping and create a redirect to a static php file.
+An example of the php file can be found under `Resources/public/image.php` or `Resources/public/video.php`. 
+
+```nginx
+
+    # Rewrite for images
+    location /imagecache {
+        rewrite ^/imagecache/(.*?)/(.*?)/(.*)$ /image.php?image-format=$1&image-id=$2&image-path=$3 last;
+    }
 ```

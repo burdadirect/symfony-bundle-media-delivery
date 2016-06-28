@@ -1,5 +1,13 @@
 <?php
 namespace HBM\MediaDeliveryBundle\Services;
+use HBM\HelperBundle\Services\HmacHelper;
+use HBM\HelperBundle\Services\SanitizingHelper;
+use HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse;
+use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Router;
 
 /**
  * Service
@@ -7,6 +15,36 @@ namespace HBM\MediaDeliveryBundle\Services;
  * Makes image delivery easy.
  */
 abstract class AbstractDeliveryHelper {
+
+  /** @var array */
+  protected $config;
+
+  /** @var string */
+  protected $env;
+
+  /** @var boolean */
+  protected $debug = TRUE;
+
+  /** @var \HBM\HelperBundle\Services\SanitizingHelper */
+  protected $sanitizingHelper;
+
+  /** @var \HBM\HelperBundle\Services\HmacHelper */
+  protected $hmacHelper;
+
+  /** @var \Symfony\Component\Routing\Router */
+  protected $router;
+
+  /** @var \Symfony\Bridge\Monolog\Logger */
+  protected $logger;
+
+  public function __construct($config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, Router $router, Logger $logger, $env = 'prod') {
+    $this->config = $config;
+    $this->sanitizingHelper = $sanitizingHelper;
+    $this->hmacHelper = $hmacHelper;
+    $this->router = $router;
+    $this->logger = $logger;
+    $this->env = $env;
+  }
 
   /**
    * Calculates time and duration for hmac signature.
@@ -39,6 +77,56 @@ abstract class AbstractDeliveryHelper {
       'time' => intval($time_to_use),
       'duration' => intval($duration_to_use)
     ];
+  }
+
+  protected function serve($file, $statusCode, Request $request) {
+    if (!$file) {
+      return new Response('', $statusCode);
+    }
+
+    $cacheSec = $this->config['settings']['cache'];
+    $fileModificationTime = filemtime($file);
+
+    if ($request === NULL) {
+      $request = Request::createFromGlobals();
+    }
+    if ($request->headers->has('If-Modified-Since')) {
+      $ifModifiedSinceHeader = strtotime($request->headers->get('If-Modified-Since'));
+
+      if ($ifModifiedSinceHeader > $fileModificationTime) {
+        $response = new Response();
+        $response->setNotModified(TRUE);
+        return $response;
+      }
+    }
+
+    $headers = [
+      'Pragma' => 'private',
+      'Cache-Control' => 'max-age='.$cacheSec,
+      'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
+      'Last-Modified' => gmdate('D, d M Y H:i:s', $fileModificationTime).' GMT',
+      'Content-Type' => mime_content_type($file),
+      'Content-Disposition' => 'inline; filename="'.basename($file).'"',
+    ];
+
+
+    /**************************************************************************/
+    /* SERVE                                                                  */
+    /**************************************************************************/
+
+    if ($this->config['settings']['x_accel_redirect']) {
+      $prefix = $this->sanitizingHelper->ensureSep($this->config['settings']['x_accel_redirect'], TRUE, TRUE);
+      $path = $this->sanitizingHelper->ensureTrailingSep($this->config['folders']['cache']);
+      $pathServed = str_replace($path, $prefix, $file);
+
+      $headers['X-Accel-Redirect'] = $pathServed;
+      return new CustomBinaryFileResponse($file, $statusCode, $headers);
+    }
+
+    $response = new CustomBinaryFileResponse($file, $statusCode, $headers);
+    $response->prepare($request);
+
+    return $response;
   }
 
 }

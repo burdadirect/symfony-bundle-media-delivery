@@ -1,19 +1,11 @@
 <?php
 namespace HBM\MediaDeliveryBundle\Services;
-
-use HBM\HelperBundle\Services\HmacHelper;
-use HBM\HelperBundle\Services\SanitizingHelper;
 use HBM\MediaDeliveryBundle\Command\GenerateCommand;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
-use HBM\MediaDeliveryBundle\Entity\Interfaces\UserReceivable;
-use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel;
 
 /**
@@ -22,36 +14,6 @@ use Symfony\Component\HttpKernel\Kernel;
  * Makes image delivery easy.
  */
 class ImageDeliveryHelper extends AbstractDeliveryHelper {
-
-  /** @var array */
-  private $config;
-
-  /** @var string */
-  private $env;
-
-  /** @var boolean */
-  private $debug = TRUE;
-
-  /** @var \HBM\HelperBundle\Services\SanitizingHelper */
-  private $sanitizingHelper;
-
-  /** @var \HBM\HelperBundle\Services\HmacHelper */
-  private $hmacHelper;
-
-  /** @var \Symfony\Component\Routing\Router */
-  private $router;
-
-  /** @var \Symfony\Bridge\Monolog\Logger */
-  private $logger;
-
-  public function __construct($config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, Router $router, Logger $logger, $env = 'prod') {
-    $this->config = $config;
-    $this->sanitizingHelper = $sanitizingHelper;
-    $this->hmacHelper = $hmacHelper;
-    $this->router = $router;
-    $this->logger = $logger;
-    $this->env = $env;
-  }
 
   /**
    * Returns an image url.
@@ -487,74 +449,26 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   public function generateAndServe($arguments, $statusCode, Request $request = NULL, Kernel $kernel = NULL) {
     $file = $arguments['path-cache'];
 
-    /**************************************************************************/
-    /* GENERATE                                                               */
-    /**************************************************************************/
-
     if (!file_exists($file)) {
       $command = ['command' => GenerateCommand::name];
       $arguments = array_merge($command, $arguments);
 
       if ($kernel === NULL) {
-        $kernel = new \AppKernel($this->env, false);
+        $kernel = new \AppKernel($this->env, FALSE);
       }
 
       $application = new Application($kernel);
       $application->add(new GenerateCommand());
       $application->setAutoExit(FALSE);
 
-      $input  = new ArrayInput($arguments);
+      $input = new ArrayInput($arguments);
       $output = new BufferedOutput();
 
       $command = $application->find('hbm:image-delivery:generate');
       $command->run($input, $output);
     }
 
-
-    /**************************************************************************/
-    /* HEADER                                                                 */
-    /**************************************************************************/
-
-    $cacheSec = $this->config['settings']['cache'];
-    $fileModificationTime = filemtime($file);
-
-    if ($request === NULL) {
-      $request = Request::createFromGlobals();
-    }
-    if ($request->headers->has('If-Modified-Since')) {
-      $ifModifiedSinceHeader = strtotime($request->headers->get('If-Modified-Since'));
-
-      if ($ifModifiedSinceHeader > $fileModificationTime) {
-        $response = new Response();
-        $response->setNotModified(TRUE);
-        return $response;
-      }
-    }
-
-    $headers = [
-      'Pragma' => 'private',
-      'Cache-Control' => 'max-age='.$cacheSec,
-      'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
-      'Last-Modified' => gmdate('D, d M Y H:i:s', $fileModificationTime).' GMT',
-      'Content-Type' => mime_content_type($file),
-      'Content-Disposition' => 'inline; filename="'.basename($file).'"',
-    ];
-
-
-    /**************************************************************************/
-    /* SERVE                                                                  */
-    /**************************************************************************/
-
-    if ($this->config['settings']['x_accel_redirect']) {
-      $prefix = $this->sanitizingHelper->ensureSep($this->config['settings']['x_accel_redirect'], TRUE, TRUE);
-      $path = $this->sanitizingHelper->ensureTrailingSep($this->config['folders']['cache']);
-      $pathServed = str_replace($path, $prefix, $file);
-
-      $headers['X-Accel-Redirect'] = $pathServed;
-      return new BinaryFileResponse($file, $statusCode, $headers);
-    }
-
-    return new BinaryFileResponse($file, $statusCode, $headers);
+    return $this->serve($file, $statusCode, $request);
   }
 
 }

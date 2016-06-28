@@ -5,7 +5,7 @@ namespace HBM\MediaDeliveryBundle\Twig;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\VideoDeliverable;
 use HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper;
 
-class ImageDeliveryExtension extends \Twig_Extension
+class VideoDeliveryExtension extends \Twig_Extension
 {
 
   /**
