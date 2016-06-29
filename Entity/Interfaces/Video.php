@@ -3,7 +3,7 @@
 namespace HBM\MediaDeliveryBundle\Entity\Interfaces;
 
 
-interface VideoDeliverable {
+interface Video {
 
   public function getId();
 

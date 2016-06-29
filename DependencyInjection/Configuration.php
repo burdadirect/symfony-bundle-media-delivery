@@ -109,7 +109,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('zip')->defaultValue('')->end()
                 ->scalarNode('region')->defaultValue('')->end()
                 ->scalarNode('country')->defaultValue('')->end()
-                ->scalarNode('countryCode')->defaultValue('')->end()
+                ->scalarNode('country_code')->defaultValue('')->end()
               ->end()
             ->end()
           ->end()

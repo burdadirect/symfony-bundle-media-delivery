@@ -2,7 +2,7 @@
 
 namespace HBM\MediaDeliveryBundle\Command;
 
-use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
 use HBM\MediaDeliveryBundle\Services\ImageGenerationHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,7 +23,6 @@ class GenerateCommand extends AbstractCommand
       ->addArgument('image',      InputArgument::REQUIRED, 'The id of the image.')
       ->addArgument('path-orig',  InputArgument::REQUIRED, 'The path of the original image.')
       ->addArgument('path-cache', InputArgument::REQUIRED, 'The path of the cached image.')
-      ->addOption('custom',   NULL, InputOption::VALUE_NONE, 'Look in the database for a custom image clipping.')
       ->addOption('retina',   NULL, InputOption::VALUE_NONE, 'Use twice the width and height for resizing.')
       ->addOption('blur',     NULL, InputOption::VALUE_OPTIONAL, 'Blur the image with this value (percent of the sqrt(width*height)).')
       ->addOption('overlay',  NULL, InputOption::VALUE_OPTIONAL, 'Overlay the given image.')
@@ -35,15 +34,15 @@ class GenerateCommand extends AbstractCommand
     // Enlarge resources
     $this->enlargeResources();
 
-
-    // Get arguments for custom clippings
-    $format = $input->getArgument('format');
-    $image = $input->getArgument('image');
-    $custom = $input->getOption('custom');
-
     $config = $this->getContainer()->getParameter('hbm.image_delivery');
 
-    /** @var ImageDeliverable $imageObj */
+    // Arguments
+    $image = $input->getArgument('image');
+    $format = $input->getArgument('format');
+    $path_orig = $input->getArgument('path-orig');
+    $path_cache = $input->getArgument('path-cache');
+
+    /** @var Image $imageObj */
     $imageObj = NULL;
     if ($image) {
       /** @var \Doctrine\ORM\EntityManager $em */
@@ -55,7 +54,7 @@ class GenerateCommand extends AbstractCommand
 
     // Get arguments for default clippings
     $settings = $config['formats'][$format];
-    if ($custom && $imageObj) {
+    if ($imageObj && $imageObj->hasClipping($format)) {
       $settings['clip'] = $imageObj->getClipping($format);
     }
     $settings['retina'] = $input->getOption('retina');
@@ -63,9 +62,6 @@ class GenerateCommand extends AbstractCommand
     $settings['overlay'] = $input->getOption('overlay');
     $settings['oGravity'] = $input->getOption('oGravity');
     $settings['oScale'] = $input->getOption('oScale');
-
-    $path_orig = $input->getArgument('path-orig');
-    $path_cache = $input->getArgument('path-cache');
 
     if (!file_exists($path_orig)) {
       $output->writeln('<cc2error>File not found.</cc2error>');
@@ -85,9 +81,9 @@ class GenerateCommand extends AbstractCommand
    * Adds several metadata in exif format to image.
    *
    * @param $path
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    */
-  private function addMetadata($path, ImageDeliverable $image, OutputInterface $output = NULL) {
+  private function addMetadata($path, Image $image, OutputInterface $output = NULL) {
     $exif = $this->getContainer()->getParameter('hbm.image_delivery.exif');
 
     $parts = [];
@@ -198,46 +194,9 @@ class GenerateCommand extends AbstractCommand
 
     $command = 'exiftool -overwrite_original '.implode(' ', $parts).' '.escapeshellarg($path);
     if ($output) {
-      //$output->writeln('<cc2note>'.$command.'</cc2note>');
+      // $output->writeln('<cc2note>'.$command.'</cc2note>');
     }
     exec($command);
-  }
-
-  public static function determineArguments($format, $overlays) {
-    $retina = 0;
-    $blurred = 0;
-    $overlay = FALSE;
-    $oGravity = FALSE;
-    $oScale = FALSE;
-    $format_category = $format;
-
-    if (substr($format, -8) === '-blurred') {
-      $blurred  = $overlays['blurred']['blur'];
-      $overlay  = $overlays['blurred']['file'];
-      $oGravity = $overlays['blurred']['gravity'];
-      $oScale   = $overlays['blurred']['scale'];
-      $format_category = substr($format, 0, -8);
-    } elseif (substr($format, -12) === '-watermarked') {
-      $blurred  = $overlays['watermarked']['blur'];
-      $overlay  = $overlays['watermarked']['file'];
-      $oGravity = $overlays['watermarked']['gravity'];
-      $oScale   = $overlays['watermarked']['scale'];
-      $format_category = substr($format, 0, -12);
-    }
-
-    if (substr($format_category, -7) === '-retina') {
-      $retina = 1;
-      $format_category = substr($format_category, 0, -7);
-    }
-
-    return [
-      'format'       => $format_category,
-      '--retina'     => $retina,
-      '--blur'       => $blurred,
-      '--overlay'    => $overlay,
-      '--oGravity'   => $oGravity,
-      '--oScale'     => $oScale
-    ];
   }
 
   /**

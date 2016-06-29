@@ -116,7 +116,7 @@ hbm_media_delivery:
             zip:           "..."
             region:        "..."
             country:       "..."
-            countryCode:   "..."
+            country_code:   "..."
 
 ```
 ### Optimization

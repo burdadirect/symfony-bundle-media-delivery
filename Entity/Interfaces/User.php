@@ -3,7 +3,7 @@
 namespace HBM\MediaDeliveryBundle\Entity\Interfaces;
 
 
-interface UserReceivable {
+interface User {
 
   public function getNoFsk();
 

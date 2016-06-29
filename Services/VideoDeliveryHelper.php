@@ -1,6 +1,6 @@
 <?php
 namespace HBM\MediaDeliveryBundle\Services;
-use HBM\MediaDeliveryBundle\Entity\Interfaces\VideoDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -13,14 +13,14 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
   /**
    * Returns an image url.
    *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\VideoDeliverable $video
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Video $video
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
    * @param string|NULL $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function getSrc(VideoDeliverable $video, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(Video $video, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientIdToUse === NULL) {
@@ -197,7 +197,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
       return $this->serve($fileOrig, 200, $request);
     } else {
       if ($this->debug) {
-        $this->logger->error('Orig file can not be found.');
+        $this->logger->error('Orig file "'.$fileOrig.'" can not be found.');
       }
       return $this->serve($fallbacks['404'], 404, $request);
     }

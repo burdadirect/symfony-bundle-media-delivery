@@ -2,7 +2,7 @@
 
 namespace HBM\MediaDeliveryBundle\Twig;
 
-use HBM\MediaDeliveryBundle\Entity\Interfaces\VideoDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
 use HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper;
 
 class VideoDeliveryExtension extends \Twig_Extension
@@ -34,7 +34,7 @@ class VideoDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function videoSrcFilter(VideoDeliverable $video, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function videoSrcFilter(Video $video, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->videoDeliveryHelper->getSrc($video, $duration, $clientId, $clientSecret);
   }

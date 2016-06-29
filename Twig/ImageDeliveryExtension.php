@@ -2,8 +2,8 @@
 
 namespace HBM\MediaDeliveryBundle\Twig;
 
-use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
-use HBM\MediaDeliveryBundle\Entity\Interfaces\UserReceivable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\User;
 use HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper;
 
 class ImageDeliveryExtension extends \Twig_Extension
@@ -37,17 +37,17 @@ class ImageDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function imgSrcFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcFilter(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->imageDeliveryHelper->getSrc($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function imgSrcRatedFilter(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcRatedFilter(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->imageDeliveryHelper->getSrcRated($image, $format, $duration, $clientId, $clientSecret);
   }
 
-  public function imgSrcRatedForUserFilter(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcRatedForUserFilter(Image $image, User $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
     return $this->imageDeliveryHelper->getSrcRatedForUser($image, $user, $format, $duration, $clientId, $clientSecret);
   }

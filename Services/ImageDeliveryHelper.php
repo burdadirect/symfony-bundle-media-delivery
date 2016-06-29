@@ -1,7 +1,8 @@
 <?php
 namespace HBM\MediaDeliveryBundle\Services;
 use HBM\MediaDeliveryBundle\Command\GenerateCommand;
-use HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
+use HBM\MediaDeliveryBundle\Entity\Interfaces\User;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -18,7 +19,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   /**
    * Returns an image url.
    *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param string|NULL $format
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
@@ -26,7 +27,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function getSrc(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientIdToUse === NULL) {
@@ -75,16 +76,12 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     // FILE
     $file = $this->sanitizingHelper->ensureSep($image->getFile(), FALSE);
 
-    // CUSTOM
-    $custom = intval($image->hasClipping($formatToUsePlain));
-
     $signature = $this->getSignature(
       $file,
       $image->getId(),
       $timeAndDuration['time'],
       $timeAndDuration['duration'],
       $formatToUse,
-      $custom,
       $clientIdToUse,
       $clientSecretToUse
     );
@@ -93,8 +90,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       'sig' => $signature,
       'ts' => $timeAndDuration['time'],
       'sec' => $timeAndDuration['duration'],
-      'client' => $clientIdToUse,
-      'custom' => $custom,
+      'client' => $clientIdToUse
     ];
 
     $paramsRoute = [
@@ -114,7 +110,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   /**
    * Returns an image url, depending of image settings.
    *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param string|NULL $format
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
@@ -122,15 +118,15 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function getSrcRated(ImageDeliverable $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrcRated(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     return $this->getSrc($image, $this->getFormatAdjusted($image, $format), $duration, $clientId, $clientSecret);
   }
 
   /**
    * Returns an image url, depending on user settings.
    *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\UserReceivable|NULL $user
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
    * @param string|NULL $format
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
@@ -138,7 +134,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function getSrcRatedForUser(ImageDeliverable $image, UserReceivable $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrcRatedForUser(Image $image, User $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     if ($user && $user->getNoFsk() && ($image->getFsk() < 21)) {
       return $this->getSrc($image, $format, $duration, $clientId, $clientSecret);
     } else {
@@ -209,11 +205,11 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   /**
    * Check for retina/blurred/watermarked format.
    *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\ImageDeliverable $image
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param $format
    * @return string
    */
-  public function getFormatAdjusted(ImageDeliverable $image, $format) {
+  public function getFormatAdjusted(Image $image, $format) {
     $formatsToWatermark = [];
     foreach ($this->config['formats'] as $formatKey => $formatConfig) {
       if ($formatConfig['watermark']) {
@@ -230,6 +226,60 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     return $format;
   }
 
+  public function getFormatSettings($formatAdjustedOrArguments, Image $image = NULL) {
+    $arguments = $this->getFormatArguments($formatAdjustedOrArguments);
+
+    $settings = $this->config['formats'][$arguments['format']];
+    if ($image && $image->hasClipping($arguments['format'])) {
+      $settings['clip'] = $image->getClipping($arguments['format']);
+    }
+
+    $settings['retina']   = $arguments['--retina'];
+    $settings['blur']     = $arguments['--blur'];
+    $settings['overlay']  = $arguments['--overlay'];
+    $settings['oGravity'] = $arguments['--oGravity'];
+    $settings['oScale']   = $arguments['--oScale'];
+
+    return $settings;
+  }
+
+  public function getFormatArguments($formatAdjusted) {
+    $retina = 0;
+    $blurred = 0;
+    $overlay = FALSE;
+    $oGravity = FALSE;
+    $oScale = FALSE;
+    $format = $formatAdjusted;
+
+    if (substr($formatAdjusted, -8) === '-blurred') {
+      $blurred  = $this->config['overlays']['blurred']['blur'];
+      $overlay  = $this->config['overlays']['blurred']['file'];
+      $oGravity = $this->config['overlays']['blurred']['gravity'];
+      $oScale   = $this->config['overlays']['blurred']['scale'];
+      $format = substr($formatAdjusted, 0, -8);
+    } elseif (substr($formatAdjusted, -12) === '-watermarked') {
+      $blurred  = $this->config['overlays']['watermarked']['blur'];
+      $overlay  = $this->config['overlays']['watermarked']['file'];
+      $oGravity = $this->config['overlays']['watermarked']['gravity'];
+      $oScale   = $this->config['overlays']['watermarked']['scale'];
+      $format = substr($formatAdjusted, 0, -12);
+    }
+
+    if (substr($format, -7) === '-retina') {
+      $retina = 1;
+      $format = substr($format, 0, -7);
+    }
+
+    return [
+      'format'       => $format,
+      '--retina'     => $retina,
+      '--blur'       => $blurred,
+      '--overlay'    => $overlay,
+      '--oGravity'   => $oGravity,
+      '--oScale'     => $oScale
+    ];
+  }
+
   /**
    * Assemble string to sign for an image.
    *
@@ -243,13 +293,12 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @param $clientSecret
    * @return string
    */
-  public function getSignature($file, $id, $time, $duration, $format, $custom, $clientId, $clientSecret) {
+  public function getSignature($file, $id, $time, $duration, $format, $clientId, $clientSecret) {
     $stringToSign = $file."\n";
     $stringToSign .= $id."\n";
     $stringToSign .= $time."\n";
     $stringToSign .= $duration."\n";
     $stringToSign .= $format."\n";
-    $stringToSign .= $custom."\n";
     $stringToSign .= $clientId."\n";
 
     return $this->hmacHelper->sign($stringToSign, $clientSecret);
@@ -307,7 +356,6 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     $folders = $this->config['folders'];
     $formats = $this->config['formats'];
     $fallbacks = $this->config['fallbacks'];
-    $overlays = $this->config['overlays'];
     $clients = $this->config['clients'];
 
     $query = $request->query->all();
@@ -317,14 +365,12 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     $dirOrig = $this->sanitizingHelper->normalizeFolderAbsolute($folders['orig']);
     $dirCache = $this->sanitizingHelper->normalizeFolderAbsolute($folders['cache']);
 
+    $formatArguments = $this->getFormatArguments($format);
+    $formatPlain = $this->getFormatPlain($format);
 
     /**************************************************************************/
     /* CHECK PARAMS                                                           */
     /**************************************************************************/
-
-    $arguments = GenerateCommand::determineArguments($format, $overlays);
-
-    $formatPlain = $this->getFormatPlain($format);
 
     // ROUTE PARAMS
     $invalidRequest = FALSE;
@@ -348,7 +394,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     }
 
     // QUERY PARAMS
-    $keys = ['ts', 'sec', 'client', 'sig', 'custom'];
+    $keys = ['ts', 'sec', 'client', 'sig'];
     foreach ($keys as $key) {
       if (!isset($query[$key])) {
         if ($this->debug) {
@@ -372,8 +418,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
         'image'      => NULL,
         'path-orig'  => $fallbacks['412'],
         'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $formatDefault),
-        '--custom'   => false
-      ], $arguments), 412, $request, $kernel);
+      ], $formatArguments), 412, $request, $kernel);
     }
 
 
@@ -388,7 +433,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
           $this->logger->error('Client is missing.');
         }
         $access = FALSE;
-      } elseif ($query['sig'] !== $this->getSignature($file, $id, $query['ts'], $query['sec'], $format, $query['custom'], $query['client'], $clients[$query['client']]['secret'])) {
+      } elseif ($query['sig'] !== $this->getSignature($file, $id, $query['ts'], $query['sec'], $format, $query['client'], $clients[$query['client']]['secret'])) {
         if ($this->debug) {
           $this->logger->error('Signature is invalid.');
         }
@@ -406,8 +451,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
         'image'      => NULL,
         'path-orig'  => $fallbacks['403'],
         'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['403']), $format),
-        '--custom'   => false,
-      ], $arguments), 403, $request, $kernel);
+      ], $formatArguments), 403, $request, $kernel);
     }
 
     /******************************************************************************/
@@ -422,18 +466,16 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
         'image'      => $id,
         'path-orig'  => $fileOrig,
         'path-cache' => $fileCache,
-        '--custom'   => $query['custom'],
-      ], $arguments), 200, $request, $kernel);
+      ], $formatArguments), 200, $request, $kernel);
     } else {
       if ($this->debug) {
-        $this->logger->error('Orig file can not be found.');
+        $this->logger->error('Orig file "'.$fileOrig.'" can not be found.');
       }
       return $this->generateAndServe(array_merge([
         'image'      => NULL,
         'path-orig'  => $fallbacks['404'],
         'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['404']), $format),
-        '--custom'   => false,
-      ], $arguments), 404, $request, $kernel);
+      ], $formatArguments), 404, $request, $kernel);
     }
   }
 
