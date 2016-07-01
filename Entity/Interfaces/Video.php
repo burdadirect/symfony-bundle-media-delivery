@@ -9,4 +9,6 @@ interface Video {
 
   public function getPath();
 
+  public function getPathFromEncoding($encoding);
+
 }

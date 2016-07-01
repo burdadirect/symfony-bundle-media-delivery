@@ -34,9 +34,14 @@ class VideoDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function videoSrcFilter(Video $video, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function videoSrcFilter(Video $video, $encoding = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
-    return $this->videoDeliveryHelper->getSrc($video, $duration, $clientId, $clientSecret);
+    if ($encoding === NULL) {
+      $file = $video->getPath();
+    } else {
+      $file = $video->getPathFromEncoding($encoding);
+    }
+    return $this->videoDeliveryHelper->getSrc($video, $file, $duration, $clientId, $clientSecret);
   }
 
 }

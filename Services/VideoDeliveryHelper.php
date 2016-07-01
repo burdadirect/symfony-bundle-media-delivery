@@ -20,7 +20,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function getSrc(Video $video, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(Video $video, $file, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientIdToUse === NULL) {
@@ -51,7 +51,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
     $timeAndDuration = $this->getTimeAndDuration($durationToUse);
 
     // FILE
-    $file = $this->sanitizingHelper->ensureSep($video->getPath(), FALSE);
+    $file = $this->sanitizingHelper->ensureSep($file, FALSE);
 
     $signature = $this->getSignature(
       $file,

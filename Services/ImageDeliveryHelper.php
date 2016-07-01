@@ -27,7 +27,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function getSrc(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(Image $image, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientIdToUse === NULL) {
@@ -56,6 +56,9 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
           $formatToUse = $formatKey;
         }
       }
+    }
+    if ($retina) {
+      $formatToUse .= '-retina';
     }
 
     // DURATION
@@ -112,14 +115,15 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    *
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param string|NULL $format
+   * @param bool $retina
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
    * @param string|NULL $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function getSrcRated(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
-    return $this->getSrc($image, $this->getFormatAdjusted($image, $format), $duration, $clientId, $clientSecret);
+  public function getSrcRated(Image $image, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+    return $this->getSrc($image, $this->getFormatAdjusted($image, $format), $retina, $duration, $clientId, $clientSecret);
   }
 
   /**
@@ -128,17 +132,18 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
    * @param string|NULL $format
+   * @param bool $retina
    * @param string|integer|NULL $duration
    * @param string|NULL $clientId
    * @param string|NULL $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function getSrcRatedForUser(Image $image, User $user = NULL, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrcRatedForUser(Image $image, User $user = NULL, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     if ($user && $user->getNoFsk() && ($image->getFsk() < 21)) {
-      return $this->getSrc($image, $format, $duration, $clientId, $clientSecret);
+      return $this->getSrc($image, $format, $retina, $duration, $clientId, $clientSecret);
     } else {
-      return $this->getSrcRated($image, $format, $duration, $clientId, $clientSecret);
+      return $this->getSrcRated($image, $format, $retina, $duration, $clientId, $clientSecret);
     }
   }
 
@@ -207,6 +212,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    *
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param $format
+   * @param bool $retina
    * @return string
    */
   public function getFormatAdjusted(Image $image, $format) {
@@ -226,8 +232,8 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     return $format;
   }
 
-  public function getFormatSettings($formatAdjustedOrArguments, Image $image = NULL) {
-    $arguments = $this->getFormatArguments($formatAdjustedOrArguments);
+  public function getFormatSettings($formatAdjusted, Image $image = NULL) {
+    $arguments = $this->getFormatArguments($formatAdjusted);
 
     $settings = $this->config['formats'][$arguments['format']];
     if ($image && $image->hasClipping($arguments['format'])) {
