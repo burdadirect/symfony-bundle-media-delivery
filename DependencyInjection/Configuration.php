@@ -175,7 +175,7 @@ class Configuration implements ConfigurationInterface
     $node = $builder->root('fallbacks');
 
     $node
-      ->children()
+      ->children()->addDefaultsIfNotSet()
         ->scalarNode('403')->defaultNull()->end()
         ->scalarNode('404')->defaultNull()->end()
         ->scalarNode('412')->defaultNull()->end()
