@@ -215,7 +215,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     }
   }
 
-  public function createFormatObj($format, Image $image, User $user, $retina = FALSE, $blurred = NULL, $watermarked = NULL) {
+  public function createFormatObj($format, Image $image, User $user = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL) {
     $formatObj = new Format($format, $this->config['suffixes']);
     $formatObj->setRetina($retina);
 

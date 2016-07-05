@@ -70,7 +70,7 @@ class GenerateCommand extends AbstractCommand
 
     $this->getImageGenerationHelper()->generate($path_orig, $path_cache, $settings);
 
-    if ($settings['exif']) {
+    if ($settings['exif'] && $imageObj) {
       $this->addMetadata($path_cache, $imageObj, $output);
     }
 
