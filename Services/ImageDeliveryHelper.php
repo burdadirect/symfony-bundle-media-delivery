@@ -1,6 +1,9 @@
 <?php
+
 namespace HBM\MediaDeliveryBundle\Services;
+
 use HBM\MediaDeliveryBundle\Command\GenerateCommand;
+use HBM\MediaDeliveryBundle\Entity\Format;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\User;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -16,18 +19,31 @@ use Symfony\Component\HttpKernel\Kernel;
  */
 class ImageDeliveryHelper extends AbstractDeliveryHelper {
 
+  /** @var string  */
+  private $formatDefault;
+
+  /** @var array */
+  private $formatsBlurred;
+
+  /** @var array */
+  private $formatsWatermarked;
+
   /**
    * Returns an image url.
    *
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
-   * @param string|NULL $format
-   * @param string|integer|NULL $duration
-   * @param string|NULL $clientId
-   * @param string|NULL $clientSecret
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User $user
+   * @param null $format
+   * @param bool $retina
+   * @param null $watermarked
+   * @param null $blurred
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function getSrc(Image $image, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(Image $image, User $user = NULL, $format = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientIdToUse === NULL) {
@@ -48,18 +64,25 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $clientSecretToUse = $this->config['clients'][$clientIdToUse]['secret'];
     }
 
+
     // FORMAT
     $formatToUse = $format;
     if ($formatToUse === NULL) {
-      foreach ($this->config['formats'] as $formatKey => $formatConfig) {
-        if ($formatConfig['default']) {
-          $formatToUse = $formatKey;
-        }
-      }
+      $formatToUse = $this->getFormatDefault();
     }
-    if ($retina) {
-      $formatToUse .= '-retina';
+
+    // FORMAT OBJECT
+    $formatObj = new Format($formatToUse, $this->config['suffixes']);
+    if (!$formatObj instanceof Format) {
+      throw new \Exception('Format should be instance of '.Format::class.'.');
     }
+
+    $formatObj->setRetina($retina);
+
+    $this->determineStatusBlurred($formatObj, $blurred, $image, $user);
+
+    $this->determineStatusWatermarked($formatObj, $watermarked, $image, $user);
+
 
     // DURATION
     $durationToUse = $duration;
@@ -67,11 +90,10 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $durationToUse = $this->config['settings']['duration'];
     }
 
-    $formatToUsePlain = $this->getFormatPlain($formatToUse);
-    if (!isset($this->config['formats'][$formatToUsePlain])) {
-      throw new \Exception('Format "'.$formatToUsePlain.'" not found.');
+    if (!isset($this->config['formats'][$formatObj->getFormat()])) {
+      throw new \Exception('Format "'.$formatObj->getFormat().'" not found.');
     }
-    $formatConfigToUse = $this->config['formats'][$formatToUsePlain];
+    $formatConfigToUse = $this->config['formats'][$formatObj->getFormat()];
 
     // TIME AND DURATION
     $timeAndDuration = $this->getTimeAndDuration($durationToUse);
@@ -84,7 +106,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $image->getId(),
       $timeAndDuration['time'],
       $timeAndDuration['duration'],
-      $formatToUse,
+      $formatObj->getFormatAdjusted(),
       $clientIdToUse,
       $clientSecretToUse
     );
@@ -97,7 +119,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     ];
 
     $paramsRoute = [
-      'format' => $formatToUse,
+      'format' => $formatObj->getFormatAdjusted(),
       'id' => $image->getId(),
       'file' => $file,
     ];
@@ -111,40 +133,18 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   }
 
   /**
-   * Returns an image url, depending of image settings.
+   * Returns an image url.
    *
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
-   * @param string|NULL $format
-   * @param bool $retina
-   * @param string|integer|NULL $duration
-   * @param string|NULL $clientId
-   * @param string|NULL $clientSecret
+   * @param null $format
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
    * @return string
    * @throws \Exception
    */
-  public function getSrcRated(Image $image, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
-    return $this->getSrc($image, $this->getFormatAdjusted($image, $format), $retina, $duration, $clientId, $clientSecret);
-  }
-
-  /**
-   * Returns an image url, depending on user settings.
-   *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
-   * @param string|NULL $format
-   * @param bool $retina
-   * @param string|integer|NULL $duration
-   * @param string|NULL $clientId
-   * @param string|NULL $clientSecret
-   * @return string
-   * @throws \Exception
-   */
-  public function getSrcRatedForUser(Image $image, User $user = NULL, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
-    if ($user && $user->getNoFsk() && ($image->getFsk() < 21)) {
-      return $this->getSrc($image, $format, $retina, $duration, $clientId, $clientSecret);
-    } else {
-      return $this->getSrcRated($image, $format, $retina, $duration, $clientId, $clientSecret);
-    }
+  public function getSrcSimple(Image $image, $format = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+    return $this->getSrc($image, NULL, $format, FALSE, NULL, NULL, $duration, $clientId, $clientSecret);
   }
 
   /**
@@ -153,87 +153,121 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    */
   public function getFormatDefault() {
-    foreach ($this->config['formats'] as $formatKey => $formatConfig) {
-      if ($formatConfig['default']) {
-        return $formatKey;
+    if ($this->formatDefault === NULL) {
+      $this->formatDefault = 'thumb';
+
+      foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+        if ($formatConfig['default']) {
+          $this->formatDefault = $formatKey;
+          break;
+        }
       }
     }
 
-    return 'thumb';
+    return $this->formatDefault;
   }
 
-  /**
-   * Check for retina/blurred/watermarked format
-   *
-   * @param $format
-   * @return string
-   */
-  public function getFormatPlain($format) {
-    $formatOrig = $format;
-    if (substr($formatOrig, -7) === '-retina') {
-      $formatOrig = substr($formatOrig, 0, -7);
-    }
-    if (substr($formatOrig, -8) === '-blurred') {
-      $formatOrig = substr($formatOrig, 0, -8);
-    }
-    if (substr($formatOrig, -12) === '-watermarked') {
-      $formatOrig = substr($formatOrig, 0, -12);
-    }
+  public function getFormatsBlurred() {
+    if ($this->formatsBlurred === NULL) {
+      $this->formatsBlurred = [];
 
-    return $formatOrig;
-  }
-
-  /**
-   * Check for retina/blurred/watermarked format
-   *
-   * @param $format
-   * @return string
-   */
-  public function getFormatSuffix($format) {
-    $formatSuffix = '';
-
-    if (substr($format, -8) === '-blurred') {
-      $formatSuffix = '_blurred';
-      $format = substr($format, 0, -8);
-    } elseif (substr($format, -12) === '-watermarked') {
-      $formatSuffix = '_watermarked';
-      $format = substr($format, 0, -12);
-    }
-
-    if (substr($format, -7) === '-retina') {
-      $formatSuffix = $formatSuffix.'__retina';
-    }
-
-    return $formatSuffix;
-  }
-
-  /**
-   * Check for retina/blurred/watermarked format.
-   *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
-   * @param $format
-   * @param bool $retina
-   * @return string
-   */
-  public function getFormatAdjusted(Image $image, $format) {
-    $formatsToWatermark = [];
-    foreach ($this->config['formats'] as $formatKey => $formatConfig) {
-      if ($formatConfig['watermark']) {
-        $formatsToWatermark[] = $formatKey;
+      foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+        if ($formatConfig['blurred']) {
+          $this->formatsBlurred[] = $formatKey;
+        }
       }
     }
 
-    if ($image->isCurrentlyRated()) {
-      $format .= '-blurred';
-    } elseif ($image->getWatermark() && in_array($format, $formatsToWatermark)) {
-      $format .= '-watermarked';
-    }
-
-    return $format;
+    return $this->formatsBlurred;
   }
 
-  public function getFormatSettings($formatAdjusted, Image $image = NULL) {
-    $arguments = $this->getFormatArguments($formatAdjusted);
+  public function getFormatsWatermarked() {
+    if ($this->formatsWatermarked === NULL) {
+      $this->formatsWatermarked = [];
+
+      foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+        if ($formatConfig['watermarked']) {
+          $this->formatsWatermarked[] = $formatKey;
+        }
+      }
+    }
+
+    return $this->formatsWatermarked;
+  }
+
+  public function determineStatusBlurred(Format $formatObj, $blurred, Image $image, User $user = NULL) {
+    if ($blurred === TRUE) {
+      $formatObj->setBlurred(TRUE);
+    } elseif ($blurred === NULL) {
+      if (in_array($formatObj->getFormat(), $this->getFormatsBlurred())) {
+        $formatObj->setBlurred($image->useBlurredFormat($user));
+      }
+    }
+  }
+
+  public function determineStatusWatermarked(Format $formatObj, $watermarked, Image $image, User $user = NULL) {
+    if ($watermarked === TRUE) {
+      $formatObj->setWatermarked(TRUE);
+    } elseif ($watermarked === NULL) {
+      if (in_array($formatObj->getFormat(), $this->getFormatsWatermarked())) {
+        $formatObj->setWatermarked($image->useWatermarkedFormat($user));
+      }
+    }
+  }
+
+  public function createFormatObj($format, Image $image, User $user, $retina = FALSE, $blurred = NULL, $watermarked = NULL) {
+    $formatObj = new Format($format, $this->config['suffixes']);
+    $formatObj->setRetina($retina);
+
+    $this->determineStatusBlurred($formatObj, $blurred, $image, $user);
+    $this->determineStatusWatermarked($formatObj, $watermarked, $image, $user);
+
+    return $formatObj;
+  }
+
+  /**
+   * @param $formatAdjusted
+   * @return Format
+   */
+  public function createFormatObjFromString($formatAdjusted) {
+    $format = $formatAdjusted;
+    $retina = FALSE;
+    $blurred = FALSE;
+    $watermarked = FALSE;
+
+
+    $suffix = $this->config['suffixes']['retina']['format'];
+    $suffixLength = strlen($suffix);
+    if (substr($format, -$suffixLength) === $suffix) {
+      $retina = TRUE;
+      $format = substr($format, 0, -$suffixLength);
+    }
+
+    $suffix = $this->config['suffixes']['blurred']['format'];
+    $suffixLength = strlen($suffix);
+    if (substr($format, -$suffixLength) === $suffix) {
+      $blurred = TRUE;
+      $format = substr($format, 0, -$suffixLength);
+    }
+
+    $suffix = $this->config['suffixes']['watermarked']['format'];
+    $suffixLength = strlen($suffix);
+    if (substr($format, -$suffixLength) === $suffix) {
+      $watermarked = TRUE;
+      $format = substr($format, 0, -$suffixLength);
+    }
+
+    /** @var Format $formatObj */
+    $formatObj = new Format($format, $this->config['suffixes']);
+    $formatObj->setRetina($retina);
+    $formatObj->setBlurred($blurred);
+    $formatObj->setWatermarked($watermarked);
+
+    return $formatObj;
+  }
+
+  public function getFormatSettings(Format $formatObj, Image $image = NULL) {
+    $arguments = $this->getFormatArguments($formatObj);
 
     $settings = $this->config['formats'][$arguments['format']];
     if ($image && $image->hasClipping($arguments['format'])) {
@@ -249,31 +283,24 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     return $settings;
   }
 
-  public function getFormatArguments($formatAdjusted) {
-    $retina = 0;
+  public function getFormatArguments(Format $formatObj) {
+    $retina = intval($formatObj->isRetina());
     $blurred = 0;
     $overlay = FALSE;
     $oGravity = FALSE;
     $oScale = FALSE;
-    $format = $formatAdjusted;
+    $format = $formatObj->getFormat();
 
-    if (substr($formatAdjusted, -8) === '-blurred') {
+    if ($formatObj->isBlurred()) {
       $blurred  = $this->config['overlays']['blurred']['blur'];
       $overlay  = $this->config['overlays']['blurred']['file'];
       $oGravity = $this->config['overlays']['blurred']['gravity'];
       $oScale   = $this->config['overlays']['blurred']['scale'];
-      $format = substr($formatAdjusted, 0, -8);
-    } elseif (substr($formatAdjusted, -12) === '-watermarked') {
+    } elseif ($formatObj->isWatermarked()) {
       $blurred  = $this->config['overlays']['watermarked']['blur'];
       $overlay  = $this->config['overlays']['watermarked']['file'];
       $oGravity = $this->config['overlays']['watermarked']['gravity'];
       $oScale   = $this->config['overlays']['watermarked']['scale'];
-      $format = substr($formatAdjusted, 0, -12);
-    }
-
-    if (substr($format, -7) === '-retina') {
-      $retina = 1;
-      $format = substr($format, 0, -7);
     }
 
     return [
@@ -293,28 +320,53 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @param $id
    * @param $time
    * @param $duration
-   * @param $format
-   * @param $custom
+   * @param $formatAdjusted
    * @param $clientId
    * @param $clientSecret
    * @return string
    */
-  public function getSignature($file, $id, $time, $duration, $format, $clientId, $clientSecret) {
+  public function getSignature($file, $id, $time, $duration, $formatAdjusted, $clientId, $clientSecret) {
     $stringToSign = $file."\n";
     $stringToSign .= $id."\n";
     $stringToSign .= $time."\n";
     $stringToSign .= $duration."\n";
-    $stringToSign .= $format."\n";
+    $stringToSign .= $formatAdjusted."\n";
     $stringToSign .= $clientId."\n";
 
     return $this->hmacHelper->sign($stringToSign, $clientSecret);
   }
 
-  public function getFileCache($file, $format) {
+  public function getFileCaches($file, $format = NULL) {
+    $retinaValues = [TRUE, FALSE];
+    $blurredValues = [TRUE, FALSE];
+    $watermarkedValues = [TRUE, FALSE];
+
+    $fileCaches = [];
+    foreach ($this->config['formats'] as $formatKey => $formatConfig) {
+      if (($format === NULL) || ($format === $formatKey)) {
+        foreach ($retinaValues as $retinaValue) {
+          foreach ($blurredValues as $blurredValue) {
+            foreach ($watermarkedValues as $watermarkedValue) {
+              $formatObj = new Format($formatKey, $this->config['suffixes']);
+              $formatObj->setRetina($retinaValue);
+              $formatObj->setBlurred($blurredValue);
+              $formatObj->setWatermarked($watermarkedValue);
+
+              $fileCaches[] = $this->getFileCache($file, $formatObj);
+            }
+          }
+        }
+      }
+    }
+
+    return array_unique($fileCaches);
+  }
+
+  public function getFileCache($file, Format $formatObj) {
     $pathinfo = pathinfo($file);
 
-    $formatPlain = $this->getFormatPlain($format);
-    $formatSuffix = $this->getFormatSuffix($format);
+    $formatPlain = $formatObj->getFormat();
+    $formatSuffix = $formatObj->getFormatSuffix();
 
     $formatConfig = [];
     if (isset($this->config['formats'][$formatPlain])) {
@@ -346,11 +398,11 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @param string $format
    * @param string|int $id
    * @param string $file
+   * @param \Symfony\Component\HttpKernel\Kernel $kernel
    * @param \Symfony\Component\HttpFoundation\Request|NULL $request
-   * @param \Symfony\Component\HttpKernel\Kernel|NULL $kernel
    * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\Response
    */
-  public function dispatch($format, $id, $file, Request $request = NULL, Kernel $kernel = NULL) {
+  public function dispatch($format, $id, $file, Kernel $kernel, Request $request = NULL) {
     if ($request === NULL) {
       $request = Request::createFromGlobals();
     }
@@ -371,8 +423,8 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     $dirOrig = $this->sanitizingHelper->normalizeFolderAbsolute($folders['orig']);
     $dirCache = $this->sanitizingHelper->normalizeFolderAbsolute($folders['cache']);
 
-    $formatArguments = $this->getFormatArguments($format);
-    $formatPlain = $this->getFormatPlain($format);
+    $formatObj = $this->createFormatObjFromString($format);
+    $formatArguments = $this->getFormatArguments($formatObj);
 
     /**************************************************************************/
     /* CHECK PARAMS                                                           */
@@ -381,6 +433,8 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     // ROUTE PARAMS
     $invalidRequest = FALSE;
     if ($format === NULL) {
+      $formatObj = $this->createFormatObjFromString($this->getFormatDefault());
+
       if ($this->debug) {
         $this->logger->error('Format is null.');
       }
@@ -410,7 +464,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       }
     }
 
-    if (!isset($formats[$formatPlain])) {
+    if (!isset($formats[$formatObj->getFormat()])) {
       if ($this->debug) {
         $this->logger->error('Format is invalid.');
       }
@@ -418,13 +472,12 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     }
 
     if ($invalidRequest) {
-      $formatDefault = $this->getFormatDefault();
 
       return $this->generateAndServe(array_merge([
         'image'      => NULL,
         'path-orig'  => $fallbacks['412'],
-        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $formatDefault),
-      ], $formatArguments), 412, $request, $kernel);
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $this->createFormatObjFromString($format)),
+      ], $formatArguments), 412, $kernel, $request);
     }
 
 
@@ -433,7 +486,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     /******************************************************************************/
 
     $access = TRUE;
-    if ($formats[$formatPlain]['restricted']) {
+    if ($formats[$formatObj->getFormat()]['restricted']) {
       if (!isset($clients[$query['client']])) {
         if ($this->debug) {
           $this->logger->error('Client is missing.');
@@ -456,8 +509,8 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       return $this->generateAndServe(array_merge([
         'image'      => NULL,
         'path-orig'  => $fallbacks['403'],
-        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['403']), $format),
-      ], $formatArguments), 403, $request, $kernel);
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['403']), $formatObj),
+      ], $formatArguments), 403, $kernel, $request);
     }
 
     /******************************************************************************/
@@ -465,14 +518,14 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     /******************************************************************************/
 
     $fileOrig = $dirOrig.$file;
-    $fileCache = $dirCache.$this->getFileCache($file, $format);
+    $fileCache = $dirCache.$this->getFileCache($file, $formatObj);
 
     if (file_exists($fileOrig)) {
       return $this->generateAndServe(array_merge([
         'image'      => $id,
         'path-orig'  => $fileOrig,
         'path-cache' => $fileCache,
-      ], $formatArguments), 200, $request, $kernel);
+      ], $formatArguments), 200, $kernel, $request);
     } else {
       if ($this->debug) {
         $this->logger->error('Orig file "'.$fileOrig.'" can not be found.');
@@ -480,8 +533,8 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       return $this->generateAndServe(array_merge([
         'image'      => NULL,
         'path-orig'  => $fallbacks['404'],
-        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['404']), $format),
-      ], $formatArguments), 404, $request, $kernel);
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['404']), $formatObj),
+      ], $formatArguments), 404, $kernel, $request);
     }
   }
 
@@ -490,20 +543,16 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    *
    * @param $arguments
    * @param integer $statusCode
+   * @param \Symfony\Component\HttpKernel\Kernel $kernel
    * @param \Symfony\Component\HttpFoundation\Request|NULL $request
-   * @param \Symfony\Component\HttpKernel\Kernel|NULL $kernel
    * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\Response
    */
-  public function generateAndServe($arguments, $statusCode, Request $request = NULL, Kernel $kernel = NULL) {
+  public function generateAndServe($arguments, $statusCode, Kernel $kernel, Request $request = NULL) {
     $file = $arguments['path-cache'];
 
     if (!file_exists($file)) {
       $command = ['command' => GenerateCommand::name];
       $arguments = array_merge($command, $arguments);
-
-      if ($kernel === NULL) {
-        $kernel = new \AppKernel($this->env, FALSE);
-      }
 
       $application = new Application($kernel);
       $application->add(new GenerateCommand());

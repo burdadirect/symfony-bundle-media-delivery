@@ -13,19 +13,21 @@ interface Image {
 
   public function getHeight();
 
-  public function getFSK();
-
-  public function getWatermark();
-
   public function getCredit();
 
+  public function getFSK();
+
   /**
-   * Returns true if an image is rated and it's not the appropriate time.
-   *
-   * @param null $datetime
-   * @return bool
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
+   * @return boolean
    */
-  public function isCurrentlyRated(\DateTime $datetime = NULL);
+  public function useWatermarkedFormat(User $user = NULL);
+
+  /**
+   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
+   * @return boolean
+   */
+  public function useBlurredFormat(User $user = NULL);
 
   /**
    * Get clipping for a certain format.

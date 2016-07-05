@@ -1,4 +1,5 @@
 <?php
+
 namespace HBM\MediaDeliveryBundle\Services;
 
 use Imagine\Image\Palette\Grayscale;

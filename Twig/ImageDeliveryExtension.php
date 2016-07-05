@@ -23,8 +23,6 @@ class ImageDeliveryExtension extends \Twig_Extension
   {
     return array(
       new \Twig_SimpleFilter('imgSrc', array($this, 'imgSrcFilter')),
-      new \Twig_SimpleFilter('imgSrcRated', array($this, 'imgSrcRatedFilter')),
-      new \Twig_SimpleFilter('imgSrcRatedForUser', array($this, 'imgSrcRatedForUserFilter')),
     );
   }
 
@@ -37,19 +35,14 @@ class ImageDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function imgSrcFilter(Image $image, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
+  public function imgSrcFilter(Image $image, $format = NULL, User $user = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
   {
-    return $this->imageDeliveryHelper->getSrc($image, $format, $retina, $duration, $clientId, $clientSecret);
-  }
-
-  public function imgSrcRatedFilter(Image $image, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
-  {
-    return $this->imageDeliveryHelper->getSrcRated($image, $format, $retina, $duration, $clientId, $clientSecret);
-  }
-
-  public function imgSrcRatedForUserFilter(Image $image, User $user = NULL, $format = NULL, $retina = FALSE, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
-  {
-    return $this->imageDeliveryHelper->getSrcRatedForUser($image, $user, $format, $retina, $duration, $clientId, $clientSecret);
+    $formatObj = $this->imageDeliveryHelper->createFormatObjFromString($format);
+    if ($formatObj->getFormat() === $format) {
+      return $this->imageDeliveryHelper->getSrc($image, $user, $format, $retina, $blurred, $watermarked, $duration, $clientId, $clientSecret);
+    } else {
+      return $this->imageDeliveryHelper->getSrc($image, $user, $formatObj->getFormat(), $formatObj->isRetina(), $formatObj->isBlurred(), $formatObj->isWatermarked(), $duration, $clientId, $clientSecret);
+    }
   }
 
 }

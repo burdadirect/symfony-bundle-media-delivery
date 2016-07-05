@@ -16,8 +16,8 @@ class DefaultController extends Controller
       $format,
       $id,
       $file,
-      $request,
-      $this->get('kernel')
+      $this->get('kernel'),
+      $request
     );
   }
 

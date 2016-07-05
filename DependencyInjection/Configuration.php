@@ -73,6 +73,13 @@ class Configuration implements ConfigurationInterface
                 ->append($this->getOverlayConfig('watermarked', 0, NULL, 9, $overlayGravityInfo, '30%%+|auto|', 'Use 30% of long side for width, scale height according to aspect ratio. '.$overlayScaleInfo))
               ->end()
             ->end()
+            ->arrayNode('suffixes')->addDefaultsIfNotSet()
+              ->children()
+                ->append($this->getSuffixConfig('blurred', '-blurred', '_blurred'))
+                ->append($this->getSuffixConfig('watermarked', '-watermarked', '_watermarked'))
+                ->append($this->getSuffixConfig('retina', '-retina', '__retina'))
+               ->end()
+            ->end()
             ->arrayNode('formats')->defaultValue(array())->useAttributeAsKey('name')
               ->prototype('array')
                 ->children()
@@ -82,7 +89,8 @@ class Configuration implements ConfigurationInterface
                   ->scalarNode('h')->defaultValue(1500)->info('Can be pixel or percent.')->end()
                   ->scalarNode('type')->defaultValue('jpg')->info('Can be "jpg" or "png".')->end()
                   ->scalarNode('mode')->defaultValue('thumbnail')->info('Can be "thumbnail", "crop", "resize" or "canvas".')->end()
-                  ->scalarNode('watermark')->defaultFalse()->info('These formats should be watermarked.')->end()
+                  ->scalarNode('blurred')->defaultTrue()->info('These formats should be blurred.')->end()
+                  ->scalarNode('watermarked')->defaultFalse()->info('These formats should be watermarked.')->end()
                   ->scalarNode('restricted')->defaultTrue()->info('These formats should be delivered only when hash is valid.')->end()
                   ->arrayNode('quality')
                     ->children()
@@ -180,6 +188,20 @@ class Configuration implements ConfigurationInterface
         ->scalarNode('403')->defaultNull()->end()
         ->scalarNode('404')->defaultNull()->end()
         ->scalarNode('412')->defaultNull()->end()
+      ->end();
+
+    return $node;
+  }
+
+  private function getSuffixConfig($suffix, $suffixFormat, $suffixFile) {
+    $builder = new TreeBuilder();
+    $node = $builder->root($suffix);
+
+    $node
+      ->addDefaultsIfNotSet()
+      ->children()
+        ->scalarNode('format')->defaultValue($suffixFormat)->end()
+        ->scalarNode('file')->defaultValue($suffixFile)->end()
       ->end();
 
     return $node;

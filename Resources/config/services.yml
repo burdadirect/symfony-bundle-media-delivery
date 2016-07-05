@@ -1,12 +1,12 @@
 services:
     # HELPER
-    hbm.helper.image_delivery:
-        class: HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper
-        arguments: ["%hbm.image_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
-
     hbm.helper.video_delivery:
         class: HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper
         arguments: ["%hbm.video_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
+
+    hbm.helper.image_delivery:
+        class: HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper
+        arguments: ["%hbm.image_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
 
     hbm.helper.image_generation:
         class: HBM\MediaDeliveryBundle\Services\ImageGenerationHelper
