@@ -378,14 +378,11 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $folderCache .= $this->sanitizingHelper->normalizeFolderRelative($pathinfo['dirname']);
     }
 
-    $fileCache = $pathinfo['filename'].'.jpg';
-
     // Use png as extension if needed.
+    $fileCache = $pathinfo['filename'].'.jpg';
     if (isset($formatConfig['type'])) {
-      if (($formatConfig['type'] === 'png') && (substr($fileCache, -4) === '.jpg')) {
-        $fileCache = substr($fileCache, 0, -4).'.png';
-      } elseif (($formatConfig['type'] === 'png') && (substr($fileCache, -5) === '.jpeg')) {
-        $fileCache = substr($fileCache, 0, -5).'.png';
+      if ($formatConfig['type'] === 'png') {
+        $fileCache = $pathinfo['filename'].'.png';
       }
     }
 
