@@ -469,7 +469,6 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     }
 
     if ($invalidRequest) {
-
       return $this->generateAndServe(array_merge([
         'image'      => NULL,
         'path-orig'  => $fallbacks['412'],
