@@ -14,9 +14,10 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
    * Returns an image url.
    *
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Video $video
-   * @param string|integer|NULL $duration
-   * @param string|NULL $clientId
-   * @param string|NULL $clientSecret
+   * @param $file
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
    * @return string
    * @throws \Exception
    */

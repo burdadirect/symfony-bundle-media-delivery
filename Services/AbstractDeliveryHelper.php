@@ -1,10 +1,10 @@
 <?php
 namespace HBM\MediaDeliveryBundle\Services;
+
 use HBM\HelperBundle\Services\HmacHelper;
 use HBM\HelperBundle\Services\SanitizingHelper;
 use HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse;
 use Symfony\Bridge\Monolog\Logger;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Router;
@@ -95,7 +95,7 @@ abstract class AbstractDeliveryHelper {
 
       if ($ifModifiedSinceHeader > $fileModificationTime) {
         $response = new Response();
-        $response->setNotModified(TRUE);
+        $response->setNotModified();
         return $response;
       }
     }

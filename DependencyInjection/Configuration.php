@@ -2,8 +2,7 @@
 
 namespace HBM\MediaDeliveryBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\ArrayNode;
-use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -21,7 +20,7 @@ class Configuration implements ConfigurationInterface
   {
     $treeBuilder = new TreeBuilder();
 
-    /** @var NodeDefinition $rootNode */
+    /** @var ArrayNodeDefinition $rootNode */
     $rootNode = $treeBuilder->root('hbm_image_delivery');
 
     $overlayGravityInfo = 'Can be an integer between 1 and 9. ';

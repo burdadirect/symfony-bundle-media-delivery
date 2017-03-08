@@ -2,6 +2,7 @@
 
 namespace HBM\MediaDeliveryBundle\Command;
 
+use Doctrine\Common\Persistence\ObjectManager;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
 use HBM\MediaDeliveryBundle\Services\ImageGenerationHelper;
 use Symfony\Component\Console\Input\InputArgument;
@@ -45,9 +46,9 @@ class GenerateCommand extends AbstractCommand
     /** @var Image $imageObj */
     $imageObj = NULL;
     if ($image) {
-      /** @var \Doctrine\ORM\EntityManager $em */
-      $em = $this->getContainer()->get('doctrine')->getManager();
-      $repo = $em->getRepository($config['settings']['entity_name']);
+      /** @var ObjectManager $om */
+      $om = $this->getContainer()->get('doctrine')->getManager();
+      $repo = $om->getRepository($config['settings']['entity_name']);
 
       $imageObj = $repo->find($image);
     }
@@ -82,6 +83,7 @@ class GenerateCommand extends AbstractCommand
    *
    * @param $path
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
+   * @param \Symfony\Component\Console\Output\OutputInterface|NULL $output
    */
   private function addMetadata($path, Image $image, OutputInterface $output = NULL) {
     $exif = $this->getContainer()->getParameter('hbm.image_delivery.exif');
@@ -150,9 +152,9 @@ class GenerateCommand extends AbstractCommand
 
     // XMP (plus)
     $ns = 'XMP-plus:';
-    if ($image->getFsk() >= 18) {
+    if ($image->getFSK() >= 18) {
       $parts[] = '-'.$ns.'AdultContentWarning="Adult Content Warning Required"';
-    } elseif ($image->getFsk() >= 16) {
+    } elseif ($image->getFSK() >= 16) {
       $parts[] = '-'.$ns.'AdultContentWarning="Not Required"';
     } else {
       $parts[] = '-'.$ns.'AdultContentWarning="Unknown"';

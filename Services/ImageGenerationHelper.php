@@ -93,7 +93,7 @@ class ImageGenerationHelper {
       } else {
         $image->usePalette(new RGB());
       }
-      $image->getImagick()->stripimage();
+      $image->getImagick()->stripImage();
       //$image->strip();
     } catch(\Exception $e) {
     }
@@ -123,13 +123,13 @@ class ImageGenerationHelper {
 
     // Apply effects
     if ($format['blur']) {
-      $image = $this->pbyBlur($image, $file_cached, $format);
+      $image = $this->pbyBlur($image, $format);
     } else {
       $image->effects()->sharpen(1);
     }
 
     if ($format['overlay']) {
-      $image = $this->pbyOverlay($image, $file_cached, $format);
+      $image = $this->pbyOverlay($image, $format);
     }
 
     // Save options
@@ -165,8 +165,8 @@ class ImageGenerationHelper {
       $x = ($w  - $imagick->getImageWidth()) / 2;
       $y = ($h - $imagick->getImageHeight()) / 2;
 
-      $imagick->setimagebackgroundcolor('none');
-      $imagick->extentimage($w, $h, -$x, -$y);
+      $imagick->setImageBackgroundColor('none');
+      $imagick->extentImage($w, $h, -$x, -$y);
     }
 
     // Save image
@@ -200,13 +200,13 @@ class ImageGenerationHelper {
 
     // Apply effects
     if ($settings['blur']) {
-      $image = $this->pbyBlur($image, $file_cached, $settings);
+      $image = $this->pbyBlur($image, $settings);
     } else {
       $image->effects()->sharpen(1);
     }
 
     if ($settings['overlay']) {
-      $image = $this->pbyOverlay($image, $file_cached, $settings);
+      $image = $this->pbyOverlay($image, $settings);
     }
 
     // Save image
@@ -293,20 +293,20 @@ class ImageGenerationHelper {
 
     // Apply effects
     if ($format['blur']) {
-      $image = $this->pbyBlur($image, $file_cached, $format);
+      $image = $this->pbyBlur($image, $format);
     } else {
       $image->effects()->sharpen(1);
     }
 
     if ($format['overlay']) {
-      $image = $this->pbyOverlay($image, $file_cached, $format);
+      $image = $this->pbyOverlay($image, $format);
     }
 
     // Save image
     $image->save($file_cached, $options);
   }
 
-  protected function pbyBlur(Image $image, $file_cached, $format) {
+  protected function pbyBlur(Image $image, $format) {
     $imageSize = $image->getSize();
     $squarePixels = $imageSize->square();
 
@@ -321,7 +321,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyOverlay(Image $image, $file_cached, $format) {
+  protected function pbyOverlay(Image $image, $format) {
     $imagine = new Imagine();
 
     $overlay = $imagine->open($format['overlay']);
