@@ -44,7 +44,9 @@ abstract class AbstractDeliveryHelper {
     $this->router = $router;
     $this->logger = $logger;
     $this->env = $env;
-    $this->debug = $this->config['debug'];
+    if (isset($this->config['debug'])) {
+      $this->debug = $this->config['debug'];
+    }
   }
 
   /**
