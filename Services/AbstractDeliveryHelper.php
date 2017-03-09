@@ -23,7 +23,7 @@ abstract class AbstractDeliveryHelper {
   protected $env;
 
   /** @var boolean */
-  protected $debug = TRUE;
+  protected $debug = FALSE;
 
   /** @var \HBM\HelperBundle\Services\SanitizingHelper */
   protected $sanitizingHelper;
@@ -44,6 +44,7 @@ abstract class AbstractDeliveryHelper {
     $this->router = $router;
     $this->logger = $logger;
     $this->env = $env;
+    $this->debug = $this->config['debug'];
   }
 
   /**

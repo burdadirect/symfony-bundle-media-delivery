@@ -39,6 +39,7 @@ class Configuration implements ConfigurationInterface
     $rootNode
       ->children()
         ->scalarNode('translation_domain')->defaultFalse()->end()
+        ->scalarNode('debug')->defaultFalse()->end()
 
         # VIDEO DELIVERY
         ->arrayNode('video_delivery')
