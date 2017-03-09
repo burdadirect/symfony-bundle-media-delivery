@@ -38,8 +38,8 @@ class Configuration implements ConfigurationInterface
 
     $rootNode
       ->children()
-        ->scalarNode('translation_domain')->defaultFalse()->end()
-        ->scalarNode('debug')->defaultFalse()->end()
+        ->scalarNode('translation_domain')->addDefaultsIfNotSet()->defaultFalse()->end()
+        ->scalarNode('debug')->addDefaultsIfNotSet()->defaultFalse()->end()
 
         # VIDEO DELIVERY
         ->arrayNode('video_delivery')
