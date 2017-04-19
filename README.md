@@ -1,5 +1,11 @@
 # HBM Image Delivery Bundle
 
+## Status
+
+### Dependencies
+
+[![Dependency Status](https://gemnasium.com/badges/github.com/burdanews/media-delivery-bundle.svg)](https://gemnasium.com/github.com/burdanews/media-delivery-bundle)
+
 ## Team
 
 ### Developers
