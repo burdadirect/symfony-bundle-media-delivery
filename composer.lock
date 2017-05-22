@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.25.7",
+            "version": "3.28.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d4f1104f5ac9c755875c5e6e9bade2c70708219a"
+                "reference": "af653f256d99ff372ce3e3be3048e7e5373ab1bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d4f1104f5ac9c755875c5e6e9bade2c70708219a",
-                "reference": "d4f1104f5ac9c755875c5e6e9bade2c70708219a",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/af653f256d99ff372ce3e3be3048e7e5373ab1bc",
+                "reference": "af653f256d99ff372ce3e3be3048e7e5373ab1bc",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,7 @@
                 "ext-simplexml": "*",
                 "ext-spl": "*",
                 "nette/neon": "^2.3",
-                "phpunit/phpunit": "~4.0|~5.0",
+                "phpunit/phpunit": "^4.8.35|^5.4.0",
                 "psr/cache": "^1.0"
             },
             "suggest": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-04-11T22:31:27+00:00"
+            "time": "2017-05-18T20:44:27+00:00"
         },
         {
             "name": "burdanews/helper-bundle",
@@ -93,7 +93,7 @@
             "source": {
                 "type": "git",
                 "url": "/Users/d429161/Development/Repositories/bundle_helper",
-                "reference": "272df4c7e64462800a6f85477a570136cc820561"
+                "reference": "ce16f00fce215c45869fa7c03d7469c839cd2c8f"
             },
             "require": {
                 "aws/aws-sdk-php": "~3.24",
@@ -104,7 +104,7 @@
                 "symfony/symfony": "~3.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "~5.3",
+                "phpunit/phpunit": "~6.1",
                 "symfony/phpunit-bridge": "~3.0"
             },
             "type": "symfony-bundle",
@@ -122,7 +122,7 @@
                 "MIT"
             ],
             "description": "HBM Helper Bundle - StringSanitizer, S3Helper, BlitlineHelper, HmacHelper.",
-            "time": "2017-04-13 18:08:24"
+            "time": "2017-05-22 14:06:06"
         },
         {
             "name": "doctrine/annotations",
@@ -1629,16 +1629,16 @@
         },
         {
             "name": "symfony/symfony",
-            "version": "v3.2.7",
+            "version": "v3.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "1631040ea8fc5e0e405c00d35cbf2c0b7b555f64"
+                "reference": "85959c2abbe4d2f050f950f39c9c3cf83819f3df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/1631040ea8fc5e0e405c00d35cbf2c0b7b555f64",
-                "reference": "1631040ea8fc5e0e405c00d35cbf2c0b7b555f64",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/85959c2abbe4d2f050f950f39c9c3cf83819f3df",
+                "reference": "85959c2abbe4d2f050f950f39c9c3cf83819f3df",
                 "shasum": ""
             },
             "require": {
@@ -1769,20 +1769,20 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2017-04-05T12:52:29+00:00"
+            "time": "2017-05-01T17:47:03+00:00"
         },
         {
             "name": "twig/twig",
-            "version": "v2.3.0",
+            "version": "v2.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "9718186a5df85a4f7917e78d3ffcabc204c75d25"
+                "reference": "85e8372c451510165c04bf781295f9d922fa524b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/9718186a5df85a4f7917e78d3ffcabc204c75d25",
-                "reference": "9718186a5df85a4f7917e78d3ffcabc204c75d25",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/85e8372c451510165c04bf781295f9d922fa524b",
+                "reference": "85e8372c451510165c04bf781295f9d922fa524b",
                 "shasum": ""
             },
             "require": {
@@ -1832,7 +1832,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2017-03-22T15:41:51+00:00"
+            "time": "2017-04-21T00:13:02+00:00"
         }
     ],
     "packages-dev": [],
