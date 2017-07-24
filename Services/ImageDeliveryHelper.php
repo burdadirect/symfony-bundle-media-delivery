@@ -284,7 +284,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   }
 
   public function getFormatArguments(Format $formatObj) {
-    $retina = intval($formatObj->isRetina());
+    $retina = (int) $formatObj->isRetina();
     $blurred = 0;
     $overlay = FALSE;
     $oGravity = FALSE;

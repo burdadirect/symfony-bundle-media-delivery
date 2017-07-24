@@ -77,8 +77,8 @@ abstract class AbstractDeliveryHelper {
     }
 
     return [
-      'time' => intval($time_to_use),
-      'duration' => intval($duration_to_use)
+      'time' => (int) $time_to_use,
+      'duration' => (int) $duration_to_use
     ];
   }
 

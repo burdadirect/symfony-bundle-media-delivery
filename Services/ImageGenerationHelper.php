@@ -110,12 +110,12 @@ class ImageGenerationHelper {
 
 
     if (substr($format['w'], -1) === '%') {
-      $percent = floatval(substr($format['w'], 0, -1));
+      $percent = (float) substr($format['w'], 0, -1);
       $format['w'] = round($percent/100 * $image->getSize()->getWidth());
     }
 
     if (substr($format['h'], -1) === '%') {
-      $percent = floatval(substr($format['h'], 0, -1));
+      $percent = (float) substr($format['h'], 0, -1);
       $format['h'] = round($percent/100 * $image->getSize()->getHeight());
     }
 
@@ -439,15 +439,15 @@ class ImageGenerationHelper {
   protected function pbyOverlayCalcScale($rel, $value, $mode) {
     if ($mode === '^') {
       return $value;
-    } else {
-      return min([$rel, $value]);
     }
+
+    return min([$rel, $value]);
   }
 
   protected function pbyOverlayGeometry($geometry) {
     // '<' = shrink / '>' = enlarge / '' = exact
     $scale = substr($geometry, 0, 1);
-    if (!in_array($scale, ['^'])) {
+    if ($scale !== '^') {
       $scale = NULL;
     } else {
       $geometry = substr($geometry, 1);
