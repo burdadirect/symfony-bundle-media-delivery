@@ -255,10 +255,23 @@ class ImageGenerationHelper {
     $image->resize($scale);
 
     if (isset($settings['focal'])) {
-      $x = $settings['focal']['x'] * $scale->getWidth();
-      $y = $settings['focal']['y'] * $scale->getHeight();
+      // Relative to absolute.
+      $x = $settings['focal']['x']/100 * $scale->getWidth();
+      $y = $settings['focal']['y']/100 * $scale->getHeight();
 
-      $point = new Point(max(0, $x - $scale->getWidth()/2), max(0, $y - $scale->getHeight()/2));
+      // Move crop origin to top-left corner.
+      $x -= $box->getWidthFloat()/2;
+      $y -= $box->getHeightFloat()/2;
+
+      // Check if crop origin is < 0
+      $x = max(0, $x);
+      $y = max(0, $y);
+
+      // Check if crop origin is > box dimensions
+      $x = min($x, $scale->getWidth() - $box->getWidthFloat());
+      $y = min($y, $scale->getHeight() - $box->getHeightFloat());
+
+      $point = new Point($x, $y);
     } else {
       if ($ratioCrop > $ratioImage) {
         $point = new Point(0, ($scale->getHeight() - $box->getHeightFloat())/2);
