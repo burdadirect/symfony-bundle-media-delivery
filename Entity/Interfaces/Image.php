@@ -38,11 +38,25 @@ interface Image {
   public function getClipping($format);
 
   /**
-   * Determines if a format hat a custom clipping.
+   * Checks if a format hat a custom clipping.
    *
    * @param string $format
    * @return boolean
    */
   public function hasClipping($format);
+
+  /**
+   * Get focal point.
+   *
+   * @return array:
+   */
+  public function getFocalPoint();
+
+  /**
+   * Checks if a focal point is defined.
+   *
+   * @return boolean
+   */
+  public function hasFocalPoint();
 
 }

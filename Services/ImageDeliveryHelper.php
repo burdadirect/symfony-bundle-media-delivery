@@ -270,8 +270,12 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     $arguments = $this->getFormatArguments($formatObj);
 
     $settings = $this->config['formats'][$arguments['format']];
-    if ($image && $image->hasClipping($arguments['format'])) {
-      $settings['clip'] = $image->getClipping($arguments['format']);
+    if ($image) {
+      if ($image->hasClipping($arguments['format'])) {
+        $settings['clip'] = $image->getClipping($arguments['format']);
+      } elseif ($image->hasFocalPoint()) {
+        $settings['focal'] = $image->getFocalPoint();
+      }
     }
 
     $settings['retina']   = $arguments['--retina'];

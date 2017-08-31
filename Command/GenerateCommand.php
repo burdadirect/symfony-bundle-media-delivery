@@ -55,8 +55,12 @@ class GenerateCommand extends AbstractCommand
 
     // Get arguments for default clippings
     $settings = $config['formats'][$format];
-    if ($imageObj && $imageObj->hasClipping($format)) {
-      $settings['clip'] = $imageObj->getClipping($format);
+    if ($imageObj) {
+      if ($imageObj->hasClipping($format)) {
+        $settings['clip'] = $imageObj->getClipping($format);
+      } elseif ($imageObj->hasFocalPoint()) {
+        $settings['focal'] = $imageObj->getFocalPoint();
+      }
     }
     $settings['retina'] = $input->getOption('retina');
     $settings['blur'] = $input->getOption('blur');

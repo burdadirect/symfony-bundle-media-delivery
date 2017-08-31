@@ -77,7 +77,7 @@ class ImageGenerationHelper {
       if (isset($settings['clip'])) {
         $this->pbyCropCustom($path_orig, $path_cache, $settings);
       } else {
-        $this->pbyCrop($path_orig, $path_cache, $settings);
+        $this->pbyCropBasic($path_orig, $path_cache, $settings);
       }
     } else {
       $this->pbyResize($path_orig, $path_cache, $settings);
@@ -101,7 +101,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyResize($file_orig, $file_cached, $format) {
+  protected function pbyResize($file_orig, $file_cached, $settings) {
     $imagine = new Imagine();
 
     /** @var Image $image */
@@ -109,27 +109,27 @@ class ImageGenerationHelper {
     $image = $this->handleColorProfiles($image);
 
 
-    if (substr($format['w'], -1) === '%') {
-      $percent = (float) substr($format['w'], 0, -1);
-      $format['w'] = round($percent/100 * $image->getSize()->getWidth());
+    if (substr($settings['w'], -1) === '%') {
+      $percent = (float) substr($settings['w'], 0, -1);
+      $settings['w'] = round($percent/100 * $image->getSize()->getWidth());
     }
 
-    if (substr($format['h'], -1) === '%') {
-      $percent = (float) substr($format['h'], 0, -1);
-      $format['h'] = round($percent/100 * $image->getSize()->getHeight());
+    if (substr($settings['h'], -1) === '%') {
+      $percent = (float) substr($settings['h'], 0, -1);
+      $settings['h'] = round($percent/100 * $image->getSize()->getHeight());
     }
 
-    $image = $this->pbyThumbnail($image, new PbyBox($format['w'], $format['h']), $format);
+    $image = $this->pbyThumbnail($image, new PbyBox($settings['w'], $settings['h']), $settings);
 
     // Apply effects
-    if ($format['blur']) {
-      $image = $this->pbyBlur($image, $format);
+    if ($settings['blur']) {
+      $image = $this->pbyBlur($image, $settings);
     } else {
       $image->effects()->sharpen(1);
     }
 
-    if ($format['overlay']) {
-      $image = $this->pbyOverlay($image, $format);
+    if ($settings['overlay']) {
+      $image = $this->pbyOverlay($image, $settings);
     }
 
     // Save options
@@ -137,7 +137,7 @@ class ImageGenerationHelper {
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
-      'jpeg_quality' => $format['quality']['jpg'],
+      'jpeg_quality' => $settings['quality']['jpg'],
     );
 
     // Save options
@@ -145,19 +145,19 @@ class ImageGenerationHelper {
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
-      'png_compression_level' => $format['quality']['png'],
+      'png_compression_level' => $settings['quality']['png'],
     );
 
     $options = $optionsJPG;
-    if ($format['mode'] === 'canvas') {
+    if ($settings['mode'] === 'canvas') {
       $options = $optionsPNG;
 
       /** @var \Imagick $imagick */
       $imagick = $image->getImagick();
 
-      $w = $format['w'];
-      $h = $format['h'];
-      if ($format['retina']) {
+      $w = $settings['w'];
+      $h = $settings['h'];
+      if ($settings['retina']) {
         $w = 2*$w;
         $h = 2*$h;
       }
@@ -190,30 +190,10 @@ class ImageGenerationHelper {
     }
     $image->resize($box);
 
-    // Save options
-    $options = array(
-      'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
-      'resolution-x' => 96,
-      'resolution-y' => 96,
-      'jpeg_quality' => $settings['quality']['jpg'],
-    );
-
-    // Apply effects
-    if ($settings['blur']) {
-      $image = $this->pbyBlur($image, $settings);
-    } else {
-      $image->effects()->sharpen(1);
-    }
-
-    if ($settings['overlay']) {
-      $image = $this->pbyOverlay($image, $settings);
-    }
-
-    // Save image
-    $image->save($file_cached, $options);
+    return $this->pbyCrop($image, $file_cached, $settings);
   }
 
-  protected function pbyCrop($file_orig, $file_cached, $format) {
+  protected function pbyCropBasic($file_orig, $file_cached, $settings) {
     $imagine = new Imagine();
 
     $image = $imagine->open($file_orig);
@@ -224,20 +204,20 @@ class ImageGenerationHelper {
 
     // Check dimensions
     $resize = FALSE;
-    if ($size->getHeight() < $format['h']) {
-      $size = $size->heighten($format['h']);
+    if ($size->getHeight() < $settings['h']) {
+      $size = $size->heighten($settings['h']);
       $resize = TRUE;
     }
-    if ($size->getWidth() < $format['w']) {
-      $size = $size->widen($format['w']);
+    if ($size->getWidth() < $settings['w']) {
+      $size = $size->widen($settings['w']);
       $resize = TRUE;
     }
 
     // Desired dimensions
-    $box = new PbyBox($format['w'], $format['h']);
+    $box = new PbyBox($settings['w'], $settings['h']);
 
     // Ratios
-    $ratioCrop = $format['w'] / $format['h'];
+    $ratioCrop = $settings['w'] / $settings['h'];
     $ratioImage = $size->getWidthFloat() / $size->getHeightFloat();
 
     if ($resize) {
@@ -245,18 +225,18 @@ class ImageGenerationHelper {
       $image->resize($size);
     } else {
       if ($ratioCrop > $ratioImage) {
-        if ($format['retina']) {
-          if ($size->getWidthFloat() >= 2*$format['w']) {
-            $box = $box->widen(2*$format['w']);
-          } elseif ($size->getWidthFloat() > $format['w']) {
+        if ($settings['retina']) {
+          if ($size->getWidthFloat() >= 2*$settings['w']) {
+            $box = $box->widen(2*$settings['w']);
+          } elseif ($size->getWidthFloat() > $settings['w']) {
             $box = $box->widen($size->getWidthFloat());
           }
         }
       } else {
-        if ($format['retina']) {
-          if ($size->getHeightFloat() >= 2*$format['h']) {
-            $box = $box->heighten(2*$format['h']);
-          } elseif ($size->getHeightFloat() > $format['h']) {
+        if ($settings['retina']) {
+          if ($size->getHeightFloat() >= 2*$settings['h']) {
+            $box = $box->heighten(2*$settings['h']);
+          } elseif ($size->getHeightFloat() > $settings['h']) {
             $box = $box->heighten($size->getHeightFloat());
           }
         }
@@ -274,32 +254,42 @@ class ImageGenerationHelper {
 
     $image->resize($scale);
 
-    // Determine crop point (gravity south or gravity center)
-    if ($ratioCrop > $ratioImage) {
-      $point = new Point(0, ($scale->getHeight() - $box->getHeightFloat())/4);
+    if (isset($settings['focal'])) {
+      $x = $settings['focal']['x'] * $scale->getWidth();
+      $y = $settings['focal']['y'] * $scale->getHeight();
+
+      $point = new Point(max(0, $x - $scale->getWidth()/2), max(0, $y - $scale->getHeight()/2));
     } else {
-      $point = new Point(($scale->getWidth() - $box->getWidthFloat())/2, 0);
+      if ($ratioCrop > $ratioImage) {
+        $point = new Point(0, ($scale->getHeight() - $box->getHeightFloat())/2);
+      } else {
+        $point = new Point(($scale->getWidth() - $box->getWidthFloat())/2, 0);
+      }
     }
 
     $image->crop($point, $box);
 
+    return $this->pbyCrop($image, $file_cached, $settings);
+  }
+
+  private function pbyCrop($image, $file_cached, $settings) {
     // Save options
     $options = array(
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
-      'jpeg_quality' => $format['quality']['jpg'],
+      'jpeg_quality' => $settings['quality']['jpg'],
     );
 
     // Apply effects
-    if ($format['blur']) {
-      $image = $this->pbyBlur($image, $format);
+    if ($settings['blur']) {
+      $image = $this->pbyBlur($image, $settings);
     } else {
       $image->effects()->sharpen(1);
     }
 
-    if ($format['overlay']) {
-      $image = $this->pbyOverlay($image, $format);
+    if ($settings['overlay']) {
+      $image = $this->pbyOverlay($image, $settings);
     }
 
     // Save image
@@ -455,7 +445,7 @@ class ImageGenerationHelper {
 
     // '+' = use long side / '-' = short side / '' = width
     $side = substr($geometry, -1);
-    if (!in_array($side, ['+', '-'])) {
+    if (!in_array($side, ['+', '-'], TRUE)) {
       $side = NULL;
     } else {
       $geometry = substr($geometry, 0, -1);
