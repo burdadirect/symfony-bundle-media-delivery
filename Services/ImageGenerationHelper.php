@@ -255,6 +255,10 @@ class ImageGenerationHelper {
     $image->resize($scale);
 
     if (isset($settings['focal'])) {
+      // Make sure x/y is between 0 and 100.
+      $settings['focal']['x'] = max(0, min($settings['focal']['x'], 100));
+      $settings['focal']['y'] = max(0, min($settings['focal']['y'], 100));
+
       // Relative to absolute.
       $x = $settings['focal']['x']/100 * $scale->getWidth();
       $y = $settings['focal']['y']/100 * $scale->getHeight();
