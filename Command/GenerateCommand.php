@@ -53,6 +53,11 @@ class GenerateCommand extends AbstractCommand
       $imageObj = $repo->find($image);
     }
 
+    if (!isset($config['formats'][$format])) {
+      copy($path_orig, $path_cache);
+      return 412;
+    }
+
     // Get arguments for default clippings
     $settings = $config['formats'][$format];
     if ($imageObj) {

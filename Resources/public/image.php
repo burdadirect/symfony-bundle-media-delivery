@@ -30,9 +30,9 @@ $kernel->boot();
 $imageDeliveryHelper = $kernel->getContainer()->get('hbm.helper.image_delivery');
 
 $response = $imageDeliveryHelper->dispatch(
-  $_GET['image-format'],
-  $_GET['image-id'],
-  $_GET['image-path'],
+  $_GET['image-format'] ?? NULL,
+  $_GET['image-id'] ?? NULL,
+  $_GET['image-path'] ?? NULL,
   NULL,
   $kernel
 );

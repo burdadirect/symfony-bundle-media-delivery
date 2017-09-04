@@ -377,7 +377,10 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $formatConfig = $this->config['formats'][$formatPlain];
     }
 
-    $folderCache = $this->sanitizingHelper->normalizeFolderRelative($formatPlain.$formatSuffix);
+    $folderCache = '';
+    if ($formatPlain.$formatSuffix !== '') {
+      $folderCache .= $this->sanitizingHelper->normalizeFolderRelative($formatPlain.$formatSuffix);
+    }
     if ($pathinfo['dirname'] !== '.') {
       $folderCache .= $this->sanitizingHelper->normalizeFolderRelative($pathinfo['dirname']);
     }
@@ -433,7 +436,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
 
     // ROUTE PARAMS
     $invalidRequest = FALSE;
-    if ($format === NULL) {
+    if (empty($format)) {
       $formatObj = $this->createFormatObjFromString($this->getFormatDefault());
 
       if ($this->debug) {
@@ -441,13 +444,13 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       }
       $invalidRequest = TRUE;
     }
-    if ($id === NULL) {
+    if (empty($format)) {
       if ($this->debug) {
         $this->logger->error('ID is null.');
       }
       $invalidRequest = TRUE;
     }
-    if ($file === NULL) {
+    if (empty($format)) {
       if ($this->debug) {
         $this->logger->error('File is null.');
       }
