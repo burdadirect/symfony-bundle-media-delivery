@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.35.3",
+            "version": "3.36.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "47856d436ad8eb172c43c88b1861cd645882de56"
+                "reference": "69321675769dd3e3d00a94bfdc747bd3a5b75b3b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/47856d436ad8eb172c43c88b1861cd645882de56",
-                "reference": "47856d436ad8eb172c43c88b1861cd645882de56",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/69321675769dd3e3d00a94bfdc747bd3a5b75b3b",
+                "reference": "69321675769dd3e3d00a94bfdc747bd3a5b75b3b",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-08-31T21:23:59+00:00"
+            "time": "2017-09-01T22:52:38+00:00"
         },
         {
             "name": "burdanews/helper-bundle",
@@ -93,7 +93,7 @@
             "source": {
                 "type": "git",
                 "url": "/Users/d429161/Development/Repositories/bundle_helper",
-                "reference": "898fe58ed0b6cb965a15f428741c585bb7b52719"
+                "reference": "de2c6ee13fcc6c7d2bcbdf6d8d82c531e259c826"
             },
             "require": {
                 "aws/aws-sdk-php": "~3.24",
@@ -122,7 +122,7 @@
                 "MIT"
             ],
             "description": "HBM Helper Bundle - StringSanitizer, S3Helper, BlitlineHelper, HmacHelper.",
-            "time": "2017-08-28 14:43:16"
+            "time": "2017-09-04 10:04:39"
         },
         {
             "name": "doctrine/annotations",
