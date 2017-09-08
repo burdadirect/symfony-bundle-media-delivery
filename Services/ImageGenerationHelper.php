@@ -278,7 +278,7 @@ class ImageGenerationHelper {
       $point = new Point($x, $y);
     } else {
       if ($ratioCrop > $ratioImage) {
-        $point = new Point(0, ($scale->getHeight() - $box->getHeightFloat())/2);
+        $point = new Point(0, ($scale->getHeight() - $box->getHeightFloat())/4);
       } else {
         $point = new Point(($scale->getWidth() - $box->getWidthFloat())/2, 0);
       }
