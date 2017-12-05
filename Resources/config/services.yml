@@ -1,4 +1,6 @@
 services:
+    _defaults: { public: true }
+
     # HELPER
     hbm.helper.video_delivery:
         class: HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper
