@@ -26,7 +26,7 @@
     "php": ">=7.1",
     "ext-imagick" : "*",
     "symfony/symfony": "^4.0",
-    "symfony/monolog-bundle" : "~3.1",
+    "symfony/monolog-bundle" : "^3.1",
     "doctrine/orm": "^2.5",
     "imagine/imagine" : "dev-master",
     "burdanews/helper-bundle": "dev-master",
