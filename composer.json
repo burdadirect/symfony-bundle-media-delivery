@@ -23,15 +23,16 @@
     }
   ],
   "require": {
+    "php": ">=7.1",
     "ext-imagick" : "*",
-    "symfony/symfony": "~3.0",
-    "symfony/monolog-bundle" : "~3.0",
-    "doctrine/orm": "~2.5",
+    "symfony/symfony": "^4.0",
+    "symfony/monolog-bundle" : "~3.1",
+    "doctrine/orm": "^2.5",
     "imagine/imagine" : "dev-master",
-    "burdanews/helper-bundle": "dev-master"
+    "burdanews/helper-bundle": "dev-master",
+    "roave/security-advisories": "dev-master"
   },
   "require-dev": {
-    "php": ">=7.0"
   },
   "target-dir": "HBM/MediaDeliveryBundle"
 }
