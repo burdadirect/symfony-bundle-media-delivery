@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "cce996c408e4cfbadecb1517e96a39d6",
+    "content-hash": "246151a9bc42f72769bbb5e137cd128b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.52.2",
+            "version": "3.52.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "69ba4e07288a532fe7635f7cdd73cffa6509f538"
+                "reference": "c6fa9217f1ff1cbfd8c498bb6deff5f342615717"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/69ba4e07288a532fe7635f7cdd73cffa6509f538",
-                "reference": "69ba4e07288a532fe7635f7cdd73cffa6509f538",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c6fa9217f1ff1cbfd8c498bb6deff5f342615717",
+                "reference": "c6fa9217f1ff1cbfd8c498bb6deff5f342615717",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-01-26T22:17:57+00:00"
+            "time": "2018-02-05T21:14:16+00:00"
         },
         {
             "name": "burdanews/helper-bundle",
@@ -93,7 +93,7 @@
             "source": {
                 "type": "git",
                 "url": "/Users/d429161/Development/Repositories/bundle_helper",
-                "reference": "469d40b3f0e34e1902ce368c94838e7c29fa91ef"
+                "reference": "d69af8af5209681392303f5b4d3b34611ed52c35"
             },
             "require": {
                 "aws/aws-sdk-php": "^3.52",
@@ -102,11 +102,11 @@
                 "ext-tidy": "*",
                 "php": ">=7.1",
                 "roave/security-advisories": "dev-master",
-                "symfony/symfony": "^4.0"
+                "symfony/symfony": "^3.0|^4.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "^6.5",
-                "symfony/phpunit-bridge": "^4.0"
+                "symfony/phpunit-bridge": "^3.0|^4.0"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -123,7 +123,7 @@
                 "MIT"
             ],
             "description": "HBM Helper Bundle - StringSanitizer, S3Helper, BlitlineHelper, HmacHelper.",
-            "time": "2018-02-05 08:32:31"
+            "time": "2018-02-06T08:35:17+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -1027,7 +1027,7 @@
                 "image manipulation",
                 "image processing"
             ],
-            "time": "2014-08-26 11:26:34"
+            "time": "2014-08-26T11:26:34+00:00"
         },
         {
             "name": "monolog/monolog",
