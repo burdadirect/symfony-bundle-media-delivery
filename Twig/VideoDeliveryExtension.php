@@ -13,15 +13,13 @@ class VideoDeliveryExtension extends \Twig_Extension
    */
   protected $videoDeliveryHelper;
 
-  public function __construct(VideoDeliveryHelper $videoDeliveryHelper)
-  {
+  public function __construct(VideoDeliveryHelper $videoDeliveryHelper) {
     $this->videoDeliveryHelper = $videoDeliveryHelper;
   }
 
-  public function getFilters()
-  {
+  public function getFilters() {
     return array(
-      new \Twig_SimpleFilter('videoSrc', array($this, 'videoSrcFilter')),
+      new \Twig_SimpleFilter('videoSrc', [$this, 'videoSrcFilter']),
     );
   }
 
@@ -34,8 +32,18 @@ class VideoDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function videoSrcFilter(Video $video, $encoding = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
-  {
+  /**
+   * @param Video $video
+   * @param null $encoding
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
+   *
+   * @return string
+   *
+   * @throws \Exception
+   */
+  public function videoSrcFilter(Video $video, $encoding = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     if ($encoding === NULL) {
       $file = $video->getPath();
     } else {

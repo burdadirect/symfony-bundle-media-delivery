@@ -31,14 +31,14 @@ class DefaultController extends Controller
   }
 
   /**
-   * @return ImageDeliveryHelper
+   * @return ImageDeliveryHelper|object
    */
   private function getImageDeliveryHelper() {
     return $this->get('hbm.helper.image_delivery');
   }
 
   /**
-   * @return VideoDeliveryHelper
+   * @return VideoDeliveryHelper|object
    */
   private function getVideoDeliveryHelper() {
     return $this->get('hbm.helper.video_delivery');

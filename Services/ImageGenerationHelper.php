@@ -29,7 +29,7 @@ class ImageGenerationHelper {
   /**
    * @return Filesystem
    */
-  protected function getFilesystem() {
+  protected function getFilesystem() : Filesystem {
     if ($this->filesystem === NULL) {
       $this->filesystem = new Filesystem();
     }
@@ -37,7 +37,7 @@ class ImageGenerationHelper {
     return $this->filesystem;
   }
 
-  protected function hbmMkdir($dir) {
+  protected function hbmMkdir($dir) : void {
     $this->getFilesystem()->mkdir($dir, 0775);
     try {
       $this->getFilesystem()->chown($dir, 'www-data', TRUE);
@@ -49,7 +49,7 @@ class ImageGenerationHelper {
     }
   }
 
-  protected function hbmChmod($path) {
+  protected function hbmChmod($path) : void {
     $this->getFilesystem()->chmod($path, 0775, 0000, TRUE);
     try {
       $this->getFilesystem()->chown($path, 'www-data', TRUE);
@@ -63,7 +63,7 @@ class ImageGenerationHelper {
 
   /****************************************************************************/
 
-  public function generate($path_orig, $path_cache, $settings) {
+  public function generate($path_orig, $path_cache, $settings) : void {
     $filesystem = new Filesystem();
 
     // Make dir
@@ -86,7 +86,7 @@ class ImageGenerationHelper {
 
 
 
-  protected function handleColorProfiles(Image $image) {
+  protected function handleColorProfiles(Image $image) : Image {
     try {
       if ($image->getImagick()->getColorspace() === \Imagick::COLORSPACE_GRAY) {
         $image->usePalette(new Grayscale());
@@ -101,7 +101,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyResize($file_orig, $file_cached, $settings) {
+  protected function pbyResize($file_orig, $file_cached, $settings) : void {
     $imagine = new Imagine();
 
     /** @var Image $image */
@@ -173,7 +173,7 @@ class ImageGenerationHelper {
     $image->save($file_cached, $options);
   }
 
-  protected function pbyCropCustom($file_orig, $file_cached, $settings) {
+  protected function pbyCropCustom($file_orig, $file_cached, $settings) : Image {
     $imagine = new Imagine();
 
     $image = $imagine->open($file_orig);
@@ -193,7 +193,7 @@ class ImageGenerationHelper {
     return $this->pbyCrop($image, $file_cached, $settings);
   }
 
-  protected function pbyCropBasic($file_orig, $file_cached, $settings) {
+  protected function pbyCropBasic($file_orig, $file_cached, $settings) : Image {
     $imagine = new Imagine();
 
     $image = $imagine->open($file_orig);
@@ -289,7 +289,7 @@ class ImageGenerationHelper {
     return $this->pbyCrop($image, $file_cached, $settings);
   }
 
-  private function pbyCrop($image, $file_cached, $settings) {
+  private function pbyCrop($image, $file_cached, $settings) : Image {
     // Save options
     $options = array(
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
@@ -311,9 +311,11 @@ class ImageGenerationHelper {
 
     // Save image
     $image->save($file_cached, $options);
+
+    return $image;
   }
 
-  protected function pbyBlur(Image $image, $format) {
+  protected function pbyBlur(Image $image, $format) : Image {
     $imageSize = $image->getSize();
     $squarePixels = $imageSize->square();
 
@@ -328,7 +330,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyOverlay(Image $image, $format) {
+  protected function pbyOverlay(Image $image, $format) : Image {
     $imagine = new Imagine();
 
     $overlay = $imagine->open($format['overlay']);
@@ -405,7 +407,7 @@ class ImageGenerationHelper {
     return $overlay;
   }
 
-  protected function pbyOverlaySize(Image $image, Image $overlay, $w, $h) {
+  protected function pbyOverlaySize(Image $image, Image $overlay, $w, $h) : array {
     $imageSize = $image->getSize();
     $overlaySize = $overlay->getSize();
 
@@ -432,7 +434,7 @@ class ImageGenerationHelper {
     return ['w' => $wNew, 'h' => $hNew];
   }
 
-  protected function pbyOverlayCalcSide(BoxInterface $imageSize, $rel, $value, $mode) {
+  protected function pbyOverlayCalcSide(BoxInterface $imageSize, $rel, $value, $mode) : float {
     if ($mode === '+') {
       $rel = max([$imageSize->getWidth(), $imageSize->getHeight()]);
     } elseif ($mode === '-') {
@@ -451,7 +453,7 @@ class ImageGenerationHelper {
     return min([$rel, $value]);
   }
 
-  protected function pbyOverlayGeometry($geometry) {
+  protected function pbyOverlayGeometry($geometry) : array {
     // '<' = shrink / '>' = enlarge / '' = exact
     $scale = substr($geometry, 0, 1);
     if ($scale !== '^') {
@@ -462,7 +464,7 @@ class ImageGenerationHelper {
 
     // '+' = use long side / '-' = short side / '' = width
     $side = substr($geometry, -1);
-    if (!in_array($side, ['+', '-'], TRUE)) {
+    if (!\in_array($side, ['+', '-'], TRUE)) {
       $side = NULL;
     } else {
       $geometry = substr($geometry, 0, -1);
@@ -489,7 +491,7 @@ class ImageGenerationHelper {
     ];
   }
 
-  protected function pbyOverlayGravity(Image $image, Image $overlay, $gravity) {
+  protected function pbyOverlayGravity(Image $image, Image $overlay, $gravity) : Point {
     $imageSize = $image->getSize();
     $overlaySize = $overlay->getSize();
 
@@ -560,7 +562,7 @@ class ImageGenerationHelper {
     return $watermarkPoint;
   }
 
-  protected function pbyThumbnail(Image $image, BoxInterface $box, $format = []) {
+  protected function pbyThumbnail(Image $image, BoxInterface $box, array $format = []) : Image {
     $size = $image->getSize();
 
     if (isset($format['retina']) && $format['retina']) {
@@ -582,7 +584,7 @@ class ImageGenerationHelper {
     if (isset($format['mode']) && ($format['mode'] === 'thumbnail')) {
       $image = $image->thumbnail($scale, ImageInterface::THUMBNAIL_INSET);
     } else {
-      $image->resize($scale);
+      $image = $image->resize($scale);
     }
 
     return $image;

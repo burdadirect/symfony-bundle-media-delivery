@@ -22,7 +22,7 @@ class ImageDeliveryExtension extends \Twig_Extension
   public function getFilters()
   {
     return array(
-      new \Twig_SimpleFilter('imgSrc', array($this, 'imgSrcFilter')),
+      new \Twig_SimpleFilter('imgSrc', [$this, 'imgSrcFilter']),
     );
   }
 
@@ -35,14 +35,28 @@ class ImageDeliveryExtension extends \Twig_Extension
   /* FILTERS                                                                  */
   /****************************************************************************/
 
-  public function imgSrcFilter(Image $image, $format = NULL, User $user = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL)
-  {
+  /**
+   * @param Image $image
+   * @param null $format
+   * @param User|NULL $user
+   * @param bool $retina
+   * @param null $blurred
+   * @param null $watermarked
+   * @param null $duration
+   * @param null $clientId
+   * @param null $clientSecret
+   *
+   * @return string
+   *
+   * @throws \Exception
+   */
+  public function imgSrcFilter(Image $image, $format = NULL, User $user = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
     $formatObj = $this->imageDeliveryHelper->createFormatObjFromString($format);
     if ($formatObj->getFormat() === $format) {
       return $this->imageDeliveryHelper->getSrc($image, $user, $format, $retina, $blurred, $watermarked, $duration, $clientId, $clientSecret);
-    } else {
-      return $this->imageDeliveryHelper->getSrc($image, $user, $formatObj->getFormat(), $formatObj->isRetina(), $formatObj->isBlurred(), $formatObj->isWatermarked(), $duration, $clientId, $clientSecret);
     }
+
+    return $this->imageDeliveryHelper->getSrc($image, $user, $formatObj->getFormat(), $formatObj->isRetina(), $formatObj->isBlurred(), $formatObj->isWatermarked(), $duration, $clientId, $clientSecret);
   }
 
 }

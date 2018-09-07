@@ -1,4 +1,5 @@
 <?php
+
 namespace HBM\MediaDeliveryBundle\Services;
 
 use HBM\HelperBundle\Services\HmacHelper;
@@ -56,12 +57,13 @@ abstract class AbstractDeliveryHelper {
    * @param string|integer $duration
    * @return array
    */
-  public function getTimeAndDuration($duration) {
+  public function getTimeAndDuration($duration) : array {
     $time = time();
 
     $time_to_use = $time;
     $duration_to_use = $duration;
-    if (substr($duration, 0, 1) === '~') {
+    $first_letter = $duration[0] ?? NULL;
+    if ($first_letter === '~') {
       $duration_to_use = substr($duration, 1);
 
       $time_to_use = $time;
@@ -82,7 +84,14 @@ abstract class AbstractDeliveryHelper {
     ];
   }
 
-  protected function serve($file, $statusCode, Request $request) {
+  /**
+   * @param $file
+   * @param $statusCode
+   * @param Request|NULL $request
+   *
+   * @return CustomBinaryFileResponse|Response
+   */
+  protected function serve($file, $statusCode, Request $request = NULL) {
     if (!$file) {
       return new Response('', $statusCode);
     }
@@ -123,6 +132,7 @@ abstract class AbstractDeliveryHelper {
       $pathServed = str_replace($path, $prefix, $file);
 
       $headers['X-Accel-Redirect'] = $pathServed;
+      $headers['X-Accel-Buffering'] = 'no';
       return new CustomBinaryFileResponse($file, $statusCode, $headers);
     }
 

@@ -1,5 +1,7 @@
 <?php
+
 namespace HBM\MediaDeliveryBundle\Services;
+
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -21,7 +23,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
    * @return string
    * @throws \Exception
    */
-  public function getSrc(Video $video, $file, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function getSrc(Video $video, $file, $duration = NULL, $clientId = NULL, $clientSecret = NULL) : string {
     // CLIENT ID
     $clientIdToUse = $clientId;
     if ($clientIdToUse === NULL) {
@@ -36,7 +38,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
     $clientSecretToUse = $clientSecret;
     if ($clientSecretToUse === NULL) {
       if (!isset($this->config['clients'][$clientIdToUse])) {
-        throw new \Exception('Client "'.$clientIdToUse.'" not found.');
+        throw new \OutOfBoundsException('Client "'.$clientIdToUse.'" not found.');
       }
 
       $clientSecretToUse = $this->config['clients'][$clientIdToUse]['secret'];
@@ -89,7 +91,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
    * @param $clientSecret
    * @return string
    */
-  public function getSignature($file, $id, $time, $duration, $clientId, $clientSecret) {
+  public function getSignature($file, $id, $time, $duration, $clientId, $clientSecret) : string {
     $stringToSign = $file."\n";
     $stringToSign .= $id."\n";
     $stringToSign .= $time."\n";
@@ -196,12 +198,12 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper {
 
     if (file_exists($fileOrig)) {
       return $this->serve($fileOrig, 200, $request);
-    } else {
-      if ($this->debug) {
-        $this->logger->error('Orig file "'.$fileOrig.'" can not be found.');
-      }
-      return $this->serve($fallbacks['404'], 404, $request);
     }
+
+    if ($this->debug) {
+      $this->logger->error('Orig file "'.$fileOrig.'" can not be found.');
+    }
+    return $this->serve($fallbacks['404'], 404, $request);
   }
 
 }

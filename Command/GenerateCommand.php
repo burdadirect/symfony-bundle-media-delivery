@@ -10,14 +10,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class GenerateCommand extends AbstractCommand
-{
+class GenerateCommand extends AbstractCommand {
 
-  const name = 'hbm:image-delivery:generate';
+  public const name = 'hbm:image-delivery:generate';
 
   protected function configure() {
     $this
-      ->setName(GenerateCommand::name)
+      ->setName(self::name)
       ->setDescription('Generate a specific format for an image.')
 
       ->addArgument('format',     InputArgument::REQUIRED, 'The format to generate.')
@@ -94,7 +93,7 @@ class GenerateCommand extends AbstractCommand
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param \Symfony\Component\Console\Output\OutputInterface|NULL $output
    */
-  private function addMetadata($path, Image $image, OutputInterface $output = NULL) {
+  private function addMetadata($path, Image $image, OutputInterface $output = NULL) : void {
     $exif = $this->getContainer()->getParameter('hbm.image_delivery.exif');
 
     $parts = [];
@@ -204,14 +203,14 @@ class GenerateCommand extends AbstractCommand
     /**************************************************************************/
 
     $command = 'exiftool -overwrite_original '.implode(' ', $parts).' '.escapeshellarg($path);
-    if ($output) {
-      // $output->writeln('<cc2note>'.$command.'</cc2note>');
+    if ($output && $output->isVeryVerbose()) {
+      $output->writeln('<cc2note>'.$command.'</cc2note>');
     }
     exec($command);
   }
 
   /**
-   * @return ImageGenerationHelper
+   * @return ImageGenerationHelper|object
    */
   private function getImageGenerationHelper() {
     return $this->getContainer()->get('hbm.helper.image_generation');

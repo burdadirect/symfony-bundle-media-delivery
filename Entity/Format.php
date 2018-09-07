@@ -33,56 +33,56 @@ class Format {
   /**
    * @return string
    */
-  public function getFormat() {
+  public function getFormat() : bool {
     return $this->format;
   }
 
   /**
    * @param string $format
    */
-  public function setFormat($format) {
+  public function setFormat($format) : void {
     $this->format = $format;
   }
 
   /**
    * @return boolean
    */
-  public function isRetina() {
+  public function isRetina() : bool {
     return $this->retina;
   }
 
   /**
    * @param boolean $retina
    */
-  public function setRetina($retina) {
+  public function setRetina($retina) : void {
     $this->retina = $retina;
   }
 
   /**
    * @return boolean
    */
-  public function isBlurred() {
+  public function isBlurred() : bool {
     return $this->blurred;
   }
 
   /**
    * @param boolean $blurred
    */
-  public function setBlurred($blurred) {
+  public function setBlurred($blurred) : void {
     $this->blurred = $blurred;
   }
 
   /**
    * @return boolean
    */
-  public function isWatermarked() {
+  public function isWatermarked() : bool {
     return $this->watermarked;
   }
 
   /**
    * @param boolean $watermarked
    */
-  public function setWatermarked($watermarked) {
+  public function setWatermarked($watermarked) : void {
     $this->watermarked = $watermarked;
   }
 
@@ -104,7 +104,7 @@ class Format {
     return $formatString;
   }
 
-  public function getFormatSuffix() {
+  public function getFormatSuffix() : string {
     $formatString = '';
 
     if ($this->isBlurred()) {
