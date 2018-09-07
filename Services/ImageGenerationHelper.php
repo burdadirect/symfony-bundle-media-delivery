@@ -133,20 +133,20 @@ class ImageGenerationHelper {
     }
 
     // Save options
-    $optionsJPG = array(
+    $optionsJPG = [
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
       'jpeg_quality' => $settings['quality']['jpg'],
-    );
+    ];
 
     // Save options
-    $optionsPNG = array(
+    $optionsPNG = [
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
       'png_compression_level' => $settings['quality']['png'],
-    );
+    ];
 
     $options = $optionsJPG;
     if ($settings['mode'] === 'canvas') {
@@ -291,12 +291,12 @@ class ImageGenerationHelper {
 
   private function pbyCrop($image, $file_cached, $settings) : Image {
     // Save options
-    $options = array(
+    $options = [
       'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
       'jpeg_quality' => $settings['quality']['jpg'],
-    );
+    ];
 
     // Apply effects
     if ($settings['blur']) {

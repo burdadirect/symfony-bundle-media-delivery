@@ -33,7 +33,7 @@ class Format {
   /**
    * @return string
    */
-  public function getFormat() : bool {
+  public function getFormat() : string {
     return $this->format;
   }
 
@@ -88,7 +88,7 @@ class Format {
 
   /****************************************************************************/
 
-  public function getFormatAdjusted() {
+  public function getFormatAdjusted() : string {
     $formatString = $this->getFormat();
 
     if ($this->isBlurred()) {

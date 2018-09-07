@@ -18,9 +18,9 @@ class VideoDeliveryExtension extends \Twig_Extension
   }
 
   public function getFilters() {
-    return array(
+    return [
       new \Twig_SimpleFilter('videoSrc', [$this, 'videoSrcFilter']),
-    );
+    ];
   }
 
   public function getName()
@@ -43,7 +43,7 @@ class VideoDeliveryExtension extends \Twig_Extension
    *
    * @throws \Exception
    */
-  public function videoSrcFilter(Video $video, $encoding = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function videoSrcFilter(Video $video, $encoding = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) : string {
     if ($encoding === NULL) {
       $file = $video->getPath();
     } else {

@@ -31,6 +31,7 @@ class HBMMediaDeliveryExtension extends Extension {
     $container->setParameter('hbm.image_delivery.settings.route', $configToUse['settings']['route']);
     $container->setParameter('hbm.image_delivery.clients', $configToUse['clients']);
     $container->setParameter('hbm.image_delivery.formats', $configToUse['formats']);
+    $container->setParameter('hbm.image_delivery.optimizations', $configToUse['optimizations']);
     $container->setParameter('hbm.image_delivery.exif', $configToUse['exif']);
 
     $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));

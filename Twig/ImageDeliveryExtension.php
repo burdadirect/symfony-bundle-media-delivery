@@ -21,9 +21,9 @@ class ImageDeliveryExtension extends \Twig_Extension
 
   public function getFilters()
   {
-    return array(
+    return [
       new \Twig_SimpleFilter('imgSrc', [$this, 'imgSrcFilter']),
-    );
+    ];
   }
 
   public function getName()
@@ -50,7 +50,7 @@ class ImageDeliveryExtension extends \Twig_Extension
    *
    * @throws \Exception
    */
-  public function imgSrcFilter(Image $image, $format = NULL, User $user = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) {
+  public function imgSrcFilter(Image $image, $format = NULL, User $user = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) : string {
     $formatObj = $this->imageDeliveryHelper->createFormatObjFromString($format);
     if ($formatObj->getFormat() === $format) {
       return $this->imageDeliveryHelper->getSrc($image, $user, $format, $retina, $blurred, $watermarked, $duration, $clientId, $clientSecret);

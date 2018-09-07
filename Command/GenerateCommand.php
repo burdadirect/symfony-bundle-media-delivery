@@ -79,11 +79,33 @@ class GenerateCommand extends AbstractCommand {
 
     $this->getImageGenerationHelper()->generate($path_orig, $path_cache, $settings);
 
+    // Add exif metadata.
     if ($imageObj && $settings['exif']) {
       $this->addMetadata($path_cache, $imageObj, $output);
     }
 
+    // Use image optimization tools.
+    foreach ($settings['optimizations'] as $optimization) {
+      if (isset($config['optimizations'][$optimization])) {
+        $this->optimize($path_cache, $config['optimizations'][$optimization], $output);
+      }
+    }
+
     return 0;
+  }
+
+  private function optimize($path, $optimization, OutputInterface $output = NULL) {
+    // Prepare options.
+    $options = $optimization['options'];
+    foreach ($options as $optionKey => $optionValue) {
+      $options[$optionKey] = str_replace('###PATH###', escapeshellarg($path), $optionValue);
+    }
+
+    $command = escapeshellcmd($optimization['path']).' '.implode(' ', $options).' '.escapeshellarg($path);
+    if ($output && $output->isVeryVerbose()) {
+      $output->writeln('<cc2note>'.$command.'</cc2note>');
+    }
+    exec($command);
   }
 
   /**
