@@ -33,10 +33,10 @@
     "symfony/twig-bundle": "^3.0|^4.0",
     "doctrine/orm": "^2.5",
     "imagine/imagine" : "dev-master",
-    "burdanews/helper-bundle": "dev-master",
-    "roave/security-advisories": "dev-master"
+    "burdanews/helper-bundle": "dev-master"
   },
   "require-dev": {
+    "roave/security-advisories": "dev-master"
   },
   "target-dir": "HBM/MediaDeliveryBundle"
 }
