@@ -19,7 +19,7 @@
   "repositories" : [
     {
       "type": "vcs",
-      "url": "/Users/d429161/Development/Repositories/bundle_helper"
+      "url": "git@github.com:burdanews/helper-bundle.git"
     }
   ],
   "require": {
