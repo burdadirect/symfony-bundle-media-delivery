@@ -25,3 +25,9 @@ services:
         arguments: ["@hbm.helper.video_delivery"]
         tags:
             - { name: twig.extension }
+
+    # COMMANDS
+    HBM\MediaDeliveryBundle\Command\:
+        resource: '../../Command'
+        tags:
+            - { name: console.command }
