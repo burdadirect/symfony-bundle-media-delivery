@@ -18,10 +18,13 @@ class Configuration implements ConfigurationInterface
    */
   public function getConfigTreeBuilder()
   {
-    $treeBuilder = new TreeBuilder('hbm_image_delivery');
+    $treeBuilder = new TreeBuilder('hbm_media_delivery');
 
-    /** @var ArrayNodeDefinition $rootNode */
-    $rootNode = $treeBuilder->getRootNode();
+    if (method_exists($treeBuilder, 'getRootNode')) {
+      $rootNode = $treeBuilder->getRootNode();
+    } else {
+      $rootNode = $treeBuilder->root('hbm_media_delivery');
+    }
 
     $overlayGravityInfo = 'Can be an integer between 1 and 9. ';
     $overlayGravityInfo .= '1: top left, 2: top center, 3: top right, ';
