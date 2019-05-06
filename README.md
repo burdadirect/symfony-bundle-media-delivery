@@ -1,15 +1,9 @@
 # HBM Image Delivery Bundle
 
-## Status
-
-### Dependencies
-
-[![Dependency Status](https://gemnasium.com/badges/github.com/burdanews/media-delivery-bundle.svg)](https://gemnasium.com/github.com/burdanews/media-delivery-bundle)
-
 ## Team
 
 ### Developers
-Christian Puchinger - puchinger@burda.com
+Christian Puchinger - christian.puchinger@burda.com
 
 ## Installation
 
@@ -28,32 +22,9 @@ of the Composer documentation.
 
 ### Step 2: Enable the Bundle
 
-Then, enable the bundle by adding it to the list of registered bundles
-in the `app/AppKernel.php` file of your project:
+With Symfony 4 the bundle is enabled automatically for all environments (see `config/bundles.php`).
 
-```php
-<?php
-// app/AppKernel.php
-
-// ...
-class AppKernel extends Kernel
-{
-    public function registerBundles()
-    {
-        $bundles = array(
-            // ...
-
-            new HBM\MediaDeliveryBundle\HBMediaDeliveryBundle(),
-        );
-
-        // ...
-    }
-
-    // ...
-}
-```
-
-### Configuration
+### Step 3: Configuration
 
 ```yml
 hbm_media_delivery:
@@ -125,7 +96,8 @@ hbm_media_delivery:
             country_code:   "..."
 
 ```
-### Optimization
+
+## Optimization
 
 If you want to further improve delivery performance, get rid of the bootstrapping and create a redirect to a static php file.
 An example of the php file can be found under `Resources/public/image.php` or `Resources/public/video.php`. 
