@@ -29,7 +29,7 @@
     "symfony/twig-bundle": "^3.4|^4.2",
     "doctrine/orm": "^2.5",
     "imagine/imagine" : "dev-master",
-    "burdanews/helper-bundle": "dev-master"
+    "burdanews/symfony-bundle-helper": "dev-master"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master"

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "54f4500ef7e4350c0a624b90d692cbfa",
+    "content-hash": "5ed38dbf531f3760b45aef364f936640",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.93.3",
+            "version": "3.93.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "874c1040edab52df3873157aa54ea51833d48c0e"
+                "reference": "ae3f4eb786b1560d07bc4f01536f48835bebf3d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/874c1040edab52df3873157aa54ea51833d48c0e",
-                "reference": "874c1040edab52df3873157aa54ea51833d48c0e",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ae3f4eb786b1560d07bc4f01536f48835bebf3d1",
+                "reference": "ae3f4eb786b1560d07bc4f01536f48835bebf3d1",
                 "shasum": ""
             },
             "require": {
@@ -87,21 +87,21 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2019-05-03T18:07:06+00:00"
+            "time": "2019-05-06T18:08:54+00:00"
         },
         {
-            "name": "burdanews/helper-bundle",
+            "name": "burdanews/symfony-bundle-helper",
             "version": "dev-master",
             "target-dir": "HBM/HelperBundle",
             "source": {
                 "type": "git",
-                "url": "https://github.com/burdanews/helper-bundle.git",
-                "reference": "9f78c3c56daf768c47a5e8268addbc62cb92c734"
+                "url": "https://github.com/burdanews/symfony-bundle-helper.git",
+                "reference": "50f9e9014d4c47c6a7b7dccacf590923e74e2042"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/burdanews/helper-bundle/zipball/9f78c3c56daf768c47a5e8268addbc62cb92c734",
-                "reference": "9f78c3c56daf768c47a5e8268addbc62cb92c734",
+                "url": "https://api.github.com/repos/burdanews/symfony-bundle-helper/zipball/50f9e9014d4c47c6a7b7dccacf590923e74e2042",
+                "reference": "50f9e9014d4c47c6a7b7dccacf590923e74e2042",
                 "shasum": ""
             },
             "require": {
@@ -138,15 +138,15 @@
             "authors": [
                 {
                     "name": "Christian Puchinger",
-                    "email": "puchinger@burda.com"
+                    "email": "christian.puchinger@burda.com"
                 }
             ],
             "description": "HBM Helper Bundle - StringSanitizer, S3Helper, BlitlineHelper, HmacHelper.",
             "support": {
-                "source": "https://github.com/burdanews/helper-bundle/tree/master",
-                "issues": "https://github.com/burdanews/helper-bundle/issues"
+                "source": "https://github.com/burdanews/symfony-bundle-helper/tree/master",
+                "issues": "https://github.com/burdanews/symfony-bundle-helper/issues"
             },
-            "time": "2019-05-06T13:11:28+00:00"
+            "time": "2019-05-06T16:00:05+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -3129,12 +3129,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "1dfa887a7e87ba9b7c635299462554b9ad241d5b"
+                "reference": "21ad2a8155dd437a0926a4d1fedb991bebd4810b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/1dfa887a7e87ba9b7c635299462554b9ad241d5b",
-                "reference": "1dfa887a7e87ba9b7c635299462554b9ad241d5b",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/21ad2a8155dd437a0926a4d1fedb991bebd4810b",
+                "reference": "21ad2a8155dd437a0926a4d1fedb991bebd4810b",
                 "shasum": ""
             },
             "conflict": {
@@ -3199,9 +3199,9 @@
                 "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.42|>=5.6,<5.6.30",
                 "laravel/socialite": ">=1,<1.0.99|>=2,<2.0.10",
                 "league/commonmark": "<0.18.3",
-                "magento/magento1ce": "<1.9.4",
-                "magento/magento1ee": ">=1.9,<1.14.4",
-                "magento/product-community-edition": ">=2,<2.2.7",
+                "magento/magento1ce": "<1.9.4.1",
+                "magento/magento1ee": ">=1.9,<1.14.4.1",
+                "magento/product-community-edition": ">=2,<2.2.8|>=2.3,<2.3.1",
                 "monolog/monolog": ">=1.8,<1.12",
                 "namshi/jose": "<2.2",
                 "onelogin/php-saml": "<2.10.4",
@@ -3329,14 +3329,14 @@
                 }
             ],
             "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-            "time": "2019-04-30T09:56:45+00:00"
+            "time": "2019-05-06T17:09:30+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
         "imagine/imagine": 20,
-        "burdanews/helper-bundle": 20,
+        "burdanews/symfony-bundle-helper": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": false,
