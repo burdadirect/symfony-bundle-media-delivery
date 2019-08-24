@@ -94,7 +94,6 @@ class ImageGenerationHelper {
         $image->usePalette(new RGB());
       }
       $image->getImagick()->stripImage();
-      //$image->strip();
     } catch(\Exception $e) {
     }
 
@@ -134,7 +133,7 @@ class ImageGenerationHelper {
 
     // Save options
     $optionsJPG = [
-      'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+      'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
       'jpeg_quality' => $settings['quality']['jpg'],
@@ -142,7 +141,7 @@ class ImageGenerationHelper {
 
     // Save options
     $optionsPNG = [
-      'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+      'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
       'png_compression_level' => $settings['quality']['png'],
@@ -292,7 +291,7 @@ class ImageGenerationHelper {
   private function pbyCrop($image, $file_cached, $settings) : Image {
     // Save options
     $options = [
-      'resolution-unit' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+      'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
       'resolution-x' => 96,
       'resolution-y' => 96,
       'jpeg_quality' => $settings['quality']['jpg'],
