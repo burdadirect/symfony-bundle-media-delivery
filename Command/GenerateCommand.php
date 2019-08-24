@@ -79,16 +79,16 @@ class GenerateCommand extends AbstractCommand {
 
     $this->getImageGenerationHelper()->generate($path_orig, $path_cache, $settings);
 
-    // Add exif metadata.
-    if ($imageObj && $settings['exif']) {
-      $this->addMetadata($path_cache, $imageObj, $output);
-    }
-
     // Use image optimization tools.
     foreach ($settings['optimizations'] as $optimization) {
       if (isset($config['optimizations'][$optimization])) {
         $this->optimize($path_cache, $config['optimizations'][$optimization], $output);
       }
+    }
+
+    // Add exif metadata.
+    if ($imageObj && $settings['exif']) {
+      $this->addMetadata($path_cache, $imageObj, $output);
     }
 
     return 0;
