@@ -19,14 +19,14 @@
     }
   ],
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.3",
     "ext-imagick" : "*",
-    "symfony/config": "^3.4|^4.2",
-    "symfony/dependency-injection": "^3.4|^4.2",
-    "symfony/http-foundation": "^3.4|^4.2",
-    "symfony/framework-bundle": "^3.4|^4.2",
+    "symfony/config": "^3.4|^4.4",
+    "symfony/dependency-injection": "^3.4|^4.4",
+    "symfony/http-foundation": "^3.4|^4.4",
+    "symfony/framework-bundle": "^3.4|^4.4",
     "symfony/monolog-bundle" : "^3.1",
-    "symfony/twig-bundle": "^3.4|^4.2",
+    "symfony/twig-bundle": "^3.4|^4.4",
     "doctrine/orm": "^2.5",
     "imagine/imagine" : "dev-master",
     "burdanews/symfony-bundle-helper": "dev-master"
