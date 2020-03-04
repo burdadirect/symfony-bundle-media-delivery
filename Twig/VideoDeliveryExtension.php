@@ -4,8 +4,10 @@ namespace HBM\MediaDeliveryBundle\Twig;
 
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
 use HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
-class VideoDeliveryExtension extends \Twig_Extension
+class VideoDeliveryExtension extends AbstractExtension
 {
 
   /**
@@ -19,7 +21,7 @@ class VideoDeliveryExtension extends \Twig_Extension
 
   public function getFilters() {
     return [
-      new \Twig_SimpleFilter('videoSrc', [$this, 'videoSrcFilter']),
+      new TwigFilter('videoSrc', [$this, 'videoSrcFilter']),
     ];
   }
 

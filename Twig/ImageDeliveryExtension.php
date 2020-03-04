@@ -5,8 +5,10 @@ namespace HBM\MediaDeliveryBundle\Twig;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\User;
 use HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
-class ImageDeliveryExtension extends \Twig_Extension
+class ImageDeliveryExtension extends AbstractExtension
 {
 
   /**
@@ -22,7 +24,7 @@ class ImageDeliveryExtension extends \Twig_Extension
   public function getFilters()
   {
     return [
-      new \Twig_SimpleFilter('imgSrc', [$this, 'imgSrcFilter']),
+      new TwigFilter('imgSrc', [$this, 'imgSrcFilter']),
     ];
   }
 
