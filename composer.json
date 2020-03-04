@@ -28,7 +28,7 @@
     "symfony/monolog-bundle" : "^3.1",
     "symfony/twig-bundle": "^3.4|^4.4",
     "doctrine/orm": "^2.5",
-    "imagine/imagine" : "dev-master",
+    "imagine/imagine" : "^1.2",
     "burdanews/symfony-bundle-helper": "dev-master"
   },
   "require-dev": {
