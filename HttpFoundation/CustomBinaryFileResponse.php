@@ -10,6 +10,9 @@ class CustomBinaryFileResponse extends BinaryFileResponse {
   /**
    * Sends the file.
    *
+   * We use a custom binary file response to support fallback images with other
+   * status codes than 2xx/3xx. So we do not use parent::sendContent() in case of 4xx.
+   *
    * {@inheritdoc}
    */
   public function sendContent()
@@ -26,7 +29,7 @@ class CustomBinaryFileResponse extends BinaryFileResponse {
     fclose($out);
     fclose($file);
 
-    if ($this->deleteFileAfterSend) {
+    if ($this->deleteFileAfterSend && file_exists($this->file->getPathname())) {
       unlink($this->file->getPathname());
     }
 
