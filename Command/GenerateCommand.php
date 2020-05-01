@@ -9,11 +9,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class GenerateCommand extends AbstractCommand {
 
   public const NAME = 'hbm:image-delivery:generate';
+
+  /**
+   * @var array
+   */
+  private $config;
 
   /**
    * @var ImageGenerationHelper
@@ -21,16 +25,23 @@ class GenerateCommand extends AbstractCommand {
   protected $igh;
 
   /**
+   * @var ObjectManager
+   */
+  protected $om;
+
+  /**
    * GenerateCommand constructor.
    *
+   * @param array $config
    * @param ImageGenerationHelper $igh
-   * @param ParameterBagInterface $pb
    * @param ObjectManager $om
    */
-  public function __construct(ImageGenerationHelper $igh, ParameterBagInterface $pb, ObjectManager $om) {
-    parent::__construct($pb, $om);
+  public function __construct(array $config, ImageGenerationHelper $igh, ObjectManager $om) {
+    parent::__construct();
 
+    $this->config = $config;
     $this->igh = $igh;
+    $this->om = $om;
   }
 
   protected function configure() {
@@ -53,7 +64,6 @@ class GenerateCommand extends AbstractCommand {
     // Enlarge resources
     $this->enlargeResources();
 
-    $config = $this->pb->get('hbm.image_delivery');
 
     // Arguments
     $image = $input->getArgument('image');
@@ -64,18 +74,18 @@ class GenerateCommand extends AbstractCommand {
     /** @var Image $imageObj */
     $imageObj = NULL;
     if ($image) {
-      $repo = $this->om->getRepository($config['settings']['entity_name']);
+      $repo = $this->om->getRepository($this->config['settings']['entity_name']);
 
       $imageObj = $repo->find($image);
     }
 
-    if (!isset($config['formats'][$format])) {
+    if (!isset($this->config['formats'][$format])) {
       copy($path_orig, $path_cache);
       return 412;
     }
 
     // Get arguments for default clippings
-    $settings = $config['formats'][$format];
+    $settings = $this->config['formats'][$format];
     if ($imageObj) {
       if ($imageObj->hasClipping($format)) {
         $settings['clip'] = $imageObj->getClipping($format);
@@ -104,7 +114,7 @@ class GenerateCommand extends AbstractCommand {
     }
 
     // Add exif metadata.
-    if ($imageObj && $settings['exif']) {
+    if ($settings['exif']) {
       $this->addMetadata($path_cache, $imageObj, $output);
     }
 
@@ -132,8 +142,8 @@ class GenerateCommand extends AbstractCommand {
    * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
    * @param \Symfony\Component\Console\Output\OutputInterface|NULL $output
    */
-  private function addMetadata($path, Image $image, OutputInterface $output = NULL) : void {
-    $exif = $this->pb->get('hbm.image_delivery.exif');
+  private function addMetadata($path, Image $image = NULL, OutputInterface $output = NULL) : void {
+    $exif = $this->config['exif'];
 
     $parts = [];
 
@@ -187,21 +197,22 @@ class GenerateCommand extends AbstractCommand {
     // XMP-Ext
     $ns = 'XMP-iptcExt:';
     $parts[] = '-'.$ns.'ArtworkSource="'.$exif['product'].'"';
-    $parts[] = '-'.$ns.'ArtworkSourceInventoryNo="'.$image->getId().'"';
+    $parts[] = '-'.$ns.'ArtworkCopyrightNotice="'.$exif['notice'].'"';
     // Not suported in version 9.46
     //$parts[] = '-'.$ns.'ArtworkSourceInvURL="'.$url.'"';
-    $parts[] = '-'.$ns.'ArtworkCopyrightNotice="'.$exif['notice'].'"';
-
-    $parts[] = '-'.$ns.'MaxAvailHeight="'.$image->getHeight().'"';
-    $parts[] = '-'.$ns.'MaxAvailWidth="'.$image->getWidth().'"';
+    if ($image) {
+      $parts[] = '-'.$ns.'ArtworkSourceInventoryNo="'.$image->getId().'"';
+      $parts[] = '-'.$ns.'MaxAvailHeight="'.$image->getHeight().'"';
+      $parts[] = '-'.$ns.'MaxAvailWidth="'.$image->getWidth().'"';
+    }
 
     /**************************************************************************/
 
     // XMP (plus)
     $ns = 'XMP-plus:';
-    if ($image->getFSK() >= 18) {
+    if ($image && $image->getFSK() >= 18) {
       $parts[] = '-'.$ns.'AdultContentWarning="Adult Content Warning Required"';
-    } elseif ($image->getFSK() >= 16) {
+    } elseif ($image && $image->getFSK() >= 16) {
       $parts[] = '-'.$ns.'AdultContentWarning="Not Required"';
     } else {
       $parts[] = '-'.$ns.'AdultContentWarning="Unknown"';
@@ -211,7 +222,9 @@ class GenerateCommand extends AbstractCommand {
     $parts[] = '-'.$ns.'CopyrightStatus="Protected"';
     $parts[] = '-'.$ns.'CreditLineRequired="Credit Adjacent To Image"';
 
-    $parts[] = '-'.$ns.'ImageCreatorName="'.$image->getCredit().'"';
+    if ($image) {
+      $parts[] = '-'.$ns.'ImageCreatorName="'.$image->getCredit().'"';
+    }
     $parts[] = '-'.$ns.'ImageType="Photographic Image"';
 
     $parts[] = '-'.$ns.'LicensorName="'.$exif['company'].'"';

@@ -1,11 +1,12 @@
 services:
-    _defaults: { public: true }
+    _defaults:
+        public: true
 
     # HELPER
     hbm.helper.video_delivery:
         class: HBM\MediaDeliveryBundle\Service\VideoDeliveryHelper
         arguments:
-            - '@parameter_bag'
+            - '%hbm.video_delivery%'
             - '@hbm.helper.sanitizing'
             - '@hbm.helper.hmac'
             - '@router'
@@ -14,8 +15,9 @@ services:
     hbm.helper.image_delivery:
         class: HBM\MediaDeliveryBundle\Service\ImageDeliveryHelper
         arguments:
-            - '@parameter_bag'
             - '%hbm.image_delivery%'
+            - '@kernel'
+            - '@hbm.command.image_generation'
             - '@hbm.helper.sanitizing'
             - '@hbm.helper.hmac'
             - '@router'
@@ -39,8 +41,21 @@ services:
         tags:
             - { name: twig.extension }
 
-    # COMMANDS
-    HBM\MediaDeliveryBundle\Command\:
-        resource: '../../Command'
+    # CONTROLLER
+    HBM\MediaDeliveryBundle\Controller\DeliveryController:
+        arguments:
+            - '@hbm.helper.image_delivery'
+            - '@hbm.helper.video_delivery'
+
+    # COMMAND
+    hbm.command.image_generation:
+        class: HBM\MediaDeliveryBundle\Command\GenerateCommand
+        arguments:
+            - '%hbm.image_delivery%'
+            - '@hbm.helper.image_generation'
+            - '@doctrine.orm.entity_manager'
+        calls:
+            - [setProfiler, ['@?profiler']]
         tags:
             - { name: console.command }
+

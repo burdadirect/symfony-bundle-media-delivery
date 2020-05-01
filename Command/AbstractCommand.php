@@ -2,43 +2,36 @@
 
 namespace HBM\MediaDeliveryBundle\Command;
 
-use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 abstract class AbstractCommand extends Command {
 
   /**
-   * @var ParameterBagInterface
+   * @var Profiler|null
    */
-  protected $pb;
+  protected $profiler;
 
   /**
-   * @var ObjectManager
+   * @param Profiler|null $profiler
    */
-  protected $om;
-
-  /**
-   * AbstractCommand constructor.
-   *
-   * @param ParameterBagInterface $pb
-   * @param ObjectManager $om
-   */
-  public function __construct(ParameterBagInterface $pb, ObjectManager $om) {
-    parent::__construct();
-
-    $this->pb = $pb;
-    $this->om = $om;
+  public function setProfiler(?Profiler $profiler) : void {
+    $this->profiler = $profiler;
   }
 
-  protected function enlargeResources() : void {
+  /**
+   * Enlarge resources.
+   *
+   * @param string $memoryLimit
+   */
+  protected function enlargeResources(string $memoryLimit = '2G') : void {
     //error_reporting(E_ALL);
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
-    ini_set('memory_limit', '2G');
+    ini_set('memory_limit', $memoryLimit);
 
-    if ($this->getContainer()->has('profiler')) {
-      $this->getContainer()->get('profiler')->disable();
+    if ($this->profiler) {
+      $this->profiler->disable();
     }
   }
 

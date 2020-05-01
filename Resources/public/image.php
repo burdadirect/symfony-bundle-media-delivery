@@ -1,8 +1,5 @@
 <?php
 
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\ErrorHandler\Debug;
 use HBM\MediaDeliveryBundle\Service\ImageDeliveryHelper;
 
@@ -32,9 +29,7 @@ $imageDeliveryHelper = $kernel->getContainer()->get('hbm.helper.image_delivery')
 $response = $imageDeliveryHelper->dispatch(
   $_GET['image-format'] ?? NULL,
   $_GET['image-id'] ?? NULL,
-  $_GET['image-path'] ?? NULL,
-  NULL,
-  $kernel
+  $_GET['image-path'] ?? NULL
 );
 
 $response->send();

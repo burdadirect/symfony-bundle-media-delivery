@@ -24,11 +24,6 @@ abstract class AbstractDeliveryHelper {
   protected $config;
 
   /**
-   * @var string
-   */
-  protected $env;
-
-  /**
    * @var boolean
    */
   protected $debug;
@@ -63,20 +58,20 @@ abstract class AbstractDeliveryHelper {
   /**
    * AbstractDeliveryHelper constructor.
    *
-   * @param ParameterBagInterface $parameterBag
+   * @param array $config
    * @param SanitizingHelper $sanitizingHelper
    * @param HmacHelper $hmacHelper
    * @param RouterInterface $router
    * @param LoggerInterface $logger
    */
-  public function __construct(ParameterBagInterface $parameterBag, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
-    $this->parameterBag = $parameterBag;
+  public function __construct(array $config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
     $this->sanitizingHelper = $sanitizingHelper;
     $this->hmacHelper = $hmacHelper;
     $this->router = $router;
     $this->logger = $logger;
 
-    $this->env = $this->parameterBag->get('kernel.environment');
+    $this->config = $config;
+    $this->debug = $this->config['debug'] ?? FALSE;
   }
 
   /**

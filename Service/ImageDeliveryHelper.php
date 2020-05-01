@@ -12,9 +12,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -23,13 +21,19 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class ImageDeliveryHelper extends AbstractDeliveryHelper {
 
-  /** @var string  */
+  /**
+   * @var string
+   */
   private $formatDefault;
 
-  /** @var array */
+  /**
+   * @var array
+   */
   private $formatsBlurred;
 
-  /** @var array */
+  /**
+   * @var array
+   */
   private $formatsWatermarked;
 
   /**
@@ -38,21 +42,26 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   private $kernel;
 
   /**
+   * @var GenerateCommand
+   */
+  private $generateCommand;
+
+  /**
    * AbstractDeliveryHelper constructor.
    *
+   * @param array $config
    * @param KernelInterface $kernel
-   * @param ParameterBagInterface $parameterBag
+   * @param GenerateCommand $generateCommand
    * @param SanitizingHelper $sanitizingHelper
    * @param HmacHelper $hmacHelper
    * @param RouterInterface $router
    * @param LoggerInterface $logger
    */
-  public function __construct(KernelInterface $kernel, ParameterBagInterface $parameterBag, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
-    parent::__construct($parameterBag, $sanitizingHelper, $hmacHelper, $router, $logger);
+  public function __construct(array $config, KernelInterface $kernel, GenerateCommand $generateCommand, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
+    parent::__construct($config, $sanitizingHelper, $hmacHelper, $router, $logger);
 
     $this->kernel = $kernel;
-    $this->config = $this->parameterBag->get('hbm.image_delivery');
-    $this->debug = $this->config['debug'] ?? FALSE;
+    $this->generateCommand = $generateCommand;
   }
 
   /**
@@ -587,6 +596,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
 
     if (!file_exists($file)) {
       $application = new Application($this->kernel);
+      $application->add($this->generateCommand);
       $application->find(GenerateCommand::NAME);
       $application->setAutoExit(FALSE);
 

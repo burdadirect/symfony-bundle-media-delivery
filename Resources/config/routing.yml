@@ -1,11 +1,11 @@
 hbm_image_delivery_src:
     path:     /%hbm.image_delivery.settings.route%/{format}/{id}/{file}
-    defaults: { _controller: HBMMediaDeliveryBundle:Default:serveImage, format: null, id: null, file: null }
+    defaults: { _controller: HBMMediaDeliveryBundle:Delivery:serveImage, format: null, id: null, file: null }
     requirements:
         file: .+
 
 hbm_video_delivery_src:
     path:     /%hbm.video_delivery.settings.route%/{id}/{file}
-    defaults: { _controller: HBMMediaDeliveryBundle:Default:serveVideo, id: null, file: null }
+    defaults: { _controller: HBMMediaDeliveryBundle:Delivery:serveVideo, id: null, file: null }
     requirements:
         file: .+

@@ -2,34 +2,13 @@
 
 namespace HBM\MediaDeliveryBundle\Service;
 
-use HBM\HelperBundle\Service\HmacHelper;
-use HBM\HelperBundle\Service\SanitizingHelper;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Makes video delivery easy.
  */
 class VideoDeliveryHelper extends AbstractDeliveryHelper {
-
-  /**
-   * AbstractDeliveryHelper constructor.
-   *
-   * @param ParameterBagInterface $parameterBag
-   * @param SanitizingHelper $sanitizingHelper
-   * @param HmacHelper $hmacHelper
-   * @param RouterInterface $router
-   * @param LoggerInterface $logger
-   */
-  public function __construct(ParameterBagInterface $parameterBag, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
-    parent::__construct($parameterBag, $sanitizingHelper, $hmacHelper, $router, $logger);
-
-    $this->config = $this->parameterBag->get('hbm.video_delivery');
-    $this->debug = $this->config['debug'] ?? FALSE;
-  }
 
   /**
    * Returns an image url.

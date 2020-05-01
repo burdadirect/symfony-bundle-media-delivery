@@ -1,8 +1,5 @@
 <?php
 
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\ErrorHandler\Debug;
 use HBM\MediaDeliveryBundle\Service\VideoDeliveryHelper;
 
@@ -31,8 +28,7 @@ $videoDeliveryHelper = $kernel->getContainer()->get('hbm.helper.video_delivery')
 
 $response = $videoDeliveryHelper->dispatch(
   $_GET['video-id'],
-  $_GET['video-path'],
-  NULL
+  $_GET['video-path']
 );
 
 $response->send();
