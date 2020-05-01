@@ -3,8 +3,8 @@
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Debug\Debug;
-use HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper;
+use Symfony\Component\ErrorHandler\Debug;
+use HBM\MediaDeliveryBundle\Service\VideoDeliveryHelper;
 
 // if you don't want to setup permissions the proper way, just uncomment the following PHP line
 // read http://symfony.com/doc/current/book/installation.html#configuration-and-setup for more information

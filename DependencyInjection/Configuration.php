@@ -2,7 +2,6 @@
 
 namespace HBM\MediaDeliveryBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -11,13 +10,12 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html#cookbook-bundles-extension-config-class}
  */
-class Configuration implements ConfigurationInterface
-{
+class Configuration implements ConfigurationInterface {
+
   /**
    * {@inheritdoc}
    */
-  public function getConfigTreeBuilder()
-  {
+  public function getConfigTreeBuilder() {
     $treeBuilder = new TreeBuilder('hbm_media_delivery');
 
     if (method_exists($treeBuilder, 'getRootNode')) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace HBM\MediaDeliveryBundle\Services;
+namespace HBM\MediaDeliveryBundle\Service;
 
 use Imagine\Image\Palette\Grayscale;
 use Imagine\Image\ImageInterface;
@@ -15,9 +15,7 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Service
- *
- * Makes image gernation easy.
+ * Makes image generation easy.
  */
 class ImageGenerationHelper {
 
@@ -86,7 +84,7 @@ class ImageGenerationHelper {
 
 
 
-  protected function handleColorProfiles(Image $image) : Image {
+  protected function handleColorProfiles(ImageInterface $image) : ImageInterface {
     try {
       if ($image->getImagick()->getColorspace() === \Imagick::COLORSPACE_GRAY) {
         $image->usePalette(new Grayscale());
@@ -124,7 +122,7 @@ class ImageGenerationHelper {
     if ($settings['blur']) {
       $image = $this->pbyBlur($image, $settings);
     } else {
-      $image->effects()->sharpen(1);
+      $image->effects()->sharpen();
     }
 
     if ($settings['overlay']) {
@@ -172,7 +170,7 @@ class ImageGenerationHelper {
     $image->save($file_cached, $options);
   }
 
-  protected function pbyCropCustom($file_orig, $file_cached, $settings) : Image {
+  protected function pbyCropCustom($file_orig, $file_cached, $settings) : ImageInterface {
     $imagine = new Imagine();
 
     $image = $imagine->open($file_orig);
@@ -192,7 +190,7 @@ class ImageGenerationHelper {
     return $this->pbyCrop($image, $file_cached, $settings);
   }
 
-  protected function pbyCropBasic($file_orig, $file_cached, $settings) : Image {
+  protected function pbyCropBasic($file_orig, $file_cached, $settings) : ImageInterface {
     $imagine = new Imagine();
 
     $image = $imagine->open($file_orig);
@@ -288,7 +286,7 @@ class ImageGenerationHelper {
     return $this->pbyCrop($image, $file_cached, $settings);
   }
 
-  private function pbyCrop($image, $file_cached, $settings) : Image {
+  private function pbyCrop(ImageInterface $image, $file_cached, $settings) : ImageInterface {
     // Save options
     $options = [
       'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
@@ -301,7 +299,7 @@ class ImageGenerationHelper {
     if ($settings['blur']) {
       $image = $this->pbyBlur($image, $settings);
     } else {
-      $image->effects()->sharpen(1);
+      $image->effects()->sharpen();
     }
 
     if ($settings['overlay']) {
@@ -314,7 +312,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyBlur(Image $image, $format) : Image {
+  protected function pbyBlur(ImageInterface $image, $format) : ImageInterface {
     $imageSize = $image->getSize();
     $squarePixels = $imageSize->square();
 
@@ -329,7 +327,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyOverlay(Image $image, $format) : Image {
+  protected function pbyOverlay(ImageInterface $image, $format) : ImageInterface {
     $imagine = new Imagine();
 
     $overlay = $imagine->open($format['overlay']);
@@ -355,7 +353,7 @@ class ImageGenerationHelper {
     return $image;
   }
 
-  protected function pbyOverlayScale(Image $image, Image $overlay, $scale) {
+  protected function pbyOverlayScale(ImageInterface $image, ImageInterface $overlay, $scale) {
     $imageSize = $image->getSize();
 
     if ($scale === 'inset') {
@@ -406,7 +404,7 @@ class ImageGenerationHelper {
     return $overlay;
   }
 
-  protected function pbyOverlaySize(Image $image, Image $overlay, $w, $h) : array {
+  protected function pbyOverlaySize(ImageInterface $image, ImageInterface $overlay, $w, $h) : array {
     $imageSize = $image->getSize();
     $overlaySize = $overlay->getSize();
 
@@ -463,7 +461,7 @@ class ImageGenerationHelper {
 
     // '+' = use long side / '-' = short side / '' = width
     $side = substr($geometry, -1);
-    if (!\in_array($side, ['+', '-'], TRUE)) {
+    if (!in_array($side, ['+', '-'], TRUE)) {
       $side = NULL;
     } else {
       $geometry = substr($geometry, 0, -1);
@@ -490,7 +488,7 @@ class ImageGenerationHelper {
     ];
   }
 
-  protected function pbyOverlayGravity(Image $image, Image $overlay, $gravity) : Point {
+  protected function pbyOverlayGravity(ImageInterface $image, ImageInterface $overlay, $gravity) : Point {
     $imageSize = $image->getSize();
     $overlaySize = $overlay->getSize();
 
@@ -561,7 +559,7 @@ class ImageGenerationHelper {
     return $watermarkPoint;
   }
 
-  protected function pbyThumbnail(Image $image, BoxInterface $box, array $format = []) : Image {
+  protected function pbyThumbnail(ImageInterface $image, BoxInterface $box, array $format = []) : ImageInterface {
     $size = $image->getSize();
 
     if (isset($format['retina']) && $format['retina']) {

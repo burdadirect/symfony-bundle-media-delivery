@@ -3,31 +3,30 @@
 namespace HBM\MediaDeliveryBundle\Twig;
 
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
-use HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper;
+use HBM\MediaDeliveryBundle\Service\VideoDeliveryHelper;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
-class VideoDeliveryExtension extends AbstractExtension
-{
+class VideoDeliveryExtension extends AbstractExtension {
 
   /**
    * @var VideoDeliveryHelper
    */
-  protected $videoDeliveryHelper;
+  protected $vdh;
 
+  /**
+   * VideoDeliveryExtension constructor.
+   *
+   * @param VideoDeliveryHelper $videoDeliveryHelper
+   */
   public function __construct(VideoDeliveryHelper $videoDeliveryHelper) {
-    $this->videoDeliveryHelper = $videoDeliveryHelper;
+    $this->vdh = $videoDeliveryHelper;
   }
 
   public function getFilters() {
     return [
       new TwigFilter('videoSrc', [$this, 'videoSrcFilter']),
     ];
-  }
-
-  public function getName()
-  {
-    return 'hbm_twig_extensions_videodelivery';
   }
 
   /****************************************************************************/
@@ -51,7 +50,7 @@ class VideoDeliveryExtension extends AbstractExtension
     } else {
       $file = $video->getPathFromEncoding($encoding);
     }
-    return $this->videoDeliveryHelper->getSrc($video, $file, $duration, $clientId, $clientSecret);
+    return $this->vdh->getSrc($video, $file, $duration, $clientId, $clientSecret);
   }
 
 }

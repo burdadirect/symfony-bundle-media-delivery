@@ -1,14 +1,15 @@
 <?php
 
-namespace HBM\MediaDeliveryBundle\Services;
+namespace HBM\MediaDeliveryBundle\Service;
 
-use HBM\HelperBundle\Services\HmacHelper;
-use HBM\HelperBundle\Services\SanitizingHelper;
+use HBM\HelperBundle\Service\HmacHelper;
+use HBM\HelperBundle\Service\SanitizingHelper;
 use HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Router;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Service
@@ -17,37 +18,65 @@ use Symfony\Component\Routing\Router;
  */
 abstract class AbstractDeliveryHelper {
 
-  /** @var array */
+  /**
+   * @var array
+   */
   protected $config;
 
-  /** @var string */
+  /**
+   * @var string
+   */
   protected $env;
 
-  /** @var boolean */
-  protected $debug = FALSE;
+  /**
+   * @var boolean
+   */
+  protected $debug;
 
-  /** @var \HBM\HelperBundle\Services\SanitizingHelper */
+  /****************************************************************************/
+
+  /**
+   * @var ParameterBagInterface
+   */
+  protected $parameterBag;
+
+  /**
+   * @var SanitizingHelper
+   */
   protected $sanitizingHelper;
 
-  /** @var \HBM\HelperBundle\Services\HmacHelper */
+  /**
+   * @var HmacHelper
+   */
   protected $hmacHelper;
 
-  /** @var \Symfony\Component\Routing\Router */
+  /**
+   * @var RouterInterface
+   */
   protected $router;
 
-  /** @var \Symfony\Bridge\Monolog\Logger */
+  /**
+   * @var LoggerInterface
+   */
   protected $logger;
 
-  public function __construct($config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, Router $router, Logger $logger, $env = 'prod') {
-    $this->config = $config;
+  /**
+   * AbstractDeliveryHelper constructor.
+   *
+   * @param ParameterBagInterface $parameterBag
+   * @param SanitizingHelper $sanitizingHelper
+   * @param HmacHelper $hmacHelper
+   * @param RouterInterface $router
+   * @param LoggerInterface $logger
+   */
+  public function __construct(ParameterBagInterface $parameterBag, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
+    $this->parameterBag = $parameterBag;
     $this->sanitizingHelper = $sanitizingHelper;
     $this->hmacHelper = $hmacHelper;
     $this->router = $router;
     $this->logger = $logger;
-    $this->env = $env;
-    if (isset($this->config['debug'])) {
-      $this->debug = $this->config['debug'];
-    }
+
+    $this->env = $this->parameterBag->get('kernel.environment');
   }
 
   /**

@@ -3,26 +3,39 @@ services:
 
     # HELPER
     hbm.helper.video_delivery:
-        class: HBM\MediaDeliveryBundle\Services\VideoDeliveryHelper
-        arguments: ["%hbm.video_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
+        class: HBM\MediaDeliveryBundle\Service\VideoDeliveryHelper
+        arguments:
+            - '@parameter_bag'
+            - '@hbm.helper.sanitizing'
+            - '@hbm.helper.hmac'
+            - '@router'
+            - '@logger'
 
     hbm.helper.image_delivery:
-        class: HBM\MediaDeliveryBundle\Services\ImageDeliveryHelper
-        arguments: ["%hbm.image_delivery%", "@hbm.helper.sanitizing", "@hbm.helper.hmac", "@router", "@logger", "%kernel.environment%"]
+        class: HBM\MediaDeliveryBundle\Service\ImageDeliveryHelper
+        arguments:
+            - '@parameter_bag'
+            - '%hbm.image_delivery%'
+            - '@hbm.helper.sanitizing'
+            - '@hbm.helper.hmac'
+            - '@router'
+            - '@logger'
 
     hbm.helper.image_generation:
-        class: HBM\MediaDeliveryBundle\Services\ImageGenerationHelper
+        class: HBM\MediaDeliveryBundle\Service\ImageGenerationHelper
 
     # TWIG
     hbm.twig_extensions.image_delivery:
         class: HBM\MediaDeliveryBundle\Twig\ImageDeliveryExtension
-        arguments: ["@hbm.helper.image_delivery"]
+        arguments:
+            - '@hbm.helper.image_delivery'
         tags:
             - { name: twig.extension }
 
     hbm.twig_extensions.video_delivery:
         class: HBM\MediaDeliveryBundle\Twig\VideoDeliveryExtension
-        arguments: ["@hbm.helper.video_delivery"]
+        arguments:
+            - '@hbm.helper.video_delivery'
         tags:
             - { name: twig.extension }
 

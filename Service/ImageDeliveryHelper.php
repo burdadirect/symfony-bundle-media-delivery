@@ -1,20 +1,24 @@
 <?php
 
-namespace HBM\MediaDeliveryBundle\Services;
+namespace HBM\MediaDeliveryBundle\Service;
 
+use HBM\HelperBundle\Service\HmacHelper;
+use HBM\HelperBundle\Service\SanitizingHelper;
 use HBM\MediaDeliveryBundle\Command\GenerateCommand;
 use HBM\MediaDeliveryBundle\Entity\Format;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\User;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
- * Service
- *
  * Makes image delivery easy.
  */
 class ImageDeliveryHelper extends AbstractDeliveryHelper {
@@ -27,6 +31,29 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
 
   /** @var array */
   private $formatsWatermarked;
+
+  /**
+   * @var KernelInterface
+   */
+  private $kernel;
+
+  /**
+   * AbstractDeliveryHelper constructor.
+   *
+   * @param KernelInterface $kernel
+   * @param ParameterBagInterface $parameterBag
+   * @param SanitizingHelper $sanitizingHelper
+   * @param HmacHelper $hmacHelper
+   * @param RouterInterface $router
+   * @param LoggerInterface $logger
+   */
+  public function __construct(KernelInterface $kernel, ParameterBagInterface $parameterBag, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
+    parent::__construct($parameterBag, $sanitizingHelper, $hmacHelper, $router, $logger);
+
+    $this->kernel = $kernel;
+    $this->config = $this->parameterBag->get('hbm.image_delivery');
+    $this->debug = $this->config['debug'] ?? FALSE;
+  }
 
   /**
    * Returns an image url.
@@ -260,7 +287,6 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $format = substr($format, 0, -$suffixLength);
     }
 
-    /** @var Format $formatObj */
     $formatObj = new Format($format, $this->config['suffixes']);
     $formatObj->setRetina($retina);
     $formatObj->setBlurred($blurred);
@@ -404,14 +430,13 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    * @param $format
    * @param $id
    * @param $file
-   * @param Kernel $kernel
    * @param Request|NULL $request
    *
    * @return \HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse|\Symfony\Component\HttpFoundation\Response
    *
    * @throws \Exception
    */
-  public function dispatch($format, $id, $file, Kernel $kernel, Request $request = NULL) {
+  public function dispatch($format, $id, $file, Request $request = NULL) {
     if ($request === NULL) {
       $request = Request::createFromGlobals();
     }
@@ -485,7 +510,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
         'image'      => NULL,
         'path-orig'  => $fallbacks['412'],
         'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $this->createFormatObjFromString($format)),
-      ], $formatArguments), 412, $kernel, $request);
+      ], $formatArguments), 412, $request);
     }
 
 
@@ -518,7 +543,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
         'image'      => NULL,
         'path-orig'  => $fallbacks['403'],
         'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['403']), $formatObj),
-      ], $formatArguments), 403, $kernel, $request);
+      ], $formatArguments), 403, $request);
     }
 
     /******************************************************************************/
@@ -533,7 +558,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
         'image'      => $id,
         'path-orig'  => $fileOrig,
         'path-cache' => $fileCache,
-      ], $formatArguments), 200, $kernel, $request);
+      ], $formatArguments), 200, $request);
     }
 
     if ($this->debug) {
@@ -543,7 +568,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       'image'      => NULL,
       'path-orig'  => $fallbacks['404'],
       'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['404']), $formatObj),
-    ], $formatArguments), 404, $kernel, $request);
+    ], $formatArguments), 404, $request);
   }
 
   /**
@@ -551,28 +576,27 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
    *
    * @param $arguments
    * @param $statusCode
-   * @param Kernel $kernel
    * @param Request|NULL $request
    *
    * @return \HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse|\Symfony\Component\HttpFoundation\Response
    *
    * @throws \Exception
    */
-  public function generateAndServe($arguments, $statusCode, Kernel $kernel, Request $request = NULL) {
+  public function generateAndServe($arguments, $statusCode, Request $request = NULL) {
     $file = $arguments['path-cache'];
 
     if (!file_exists($file)) {
-      $command = ['command' => GenerateCommand::name];
-      $arguments = array_merge($command, $arguments);
-
-      $application = new Application($kernel);
-      $application->add(new GenerateCommand());
+      $application = new Application($this->kernel);
+      $application->find(GenerateCommand::NAME);
       $application->setAutoExit(FALSE);
 
-      $input = new ArrayInput($arguments);
+      $input = new ArrayInput(array_merge(
+        ['command' => GenerateCommand::NAME],
+        $arguments
+      ));
       $output = new BufferedOutput();
 
-      $command = $application->find('hbm:image-delivery:generate');
+      $command = $application->find(GenerateCommand::NAME);
       $command->run($input, $output);
     }
 

@@ -2,21 +2,40 @@
 
 namespace HBM\MediaDeliveryBundle\Command;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
-use HBM\MediaDeliveryBundle\Services\ImageGenerationHelper;
+use HBM\MediaDeliveryBundle\Service\ImageGenerationHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class GenerateCommand extends AbstractCommand {
 
-  public const name = 'hbm:image-delivery:generate';
+  public const NAME = 'hbm:image-delivery:generate';
+
+  /**
+   * @var ImageGenerationHelper
+   */
+  protected $igh;
+
+  /**
+   * GenerateCommand constructor.
+   *
+   * @param ImageGenerationHelper $igh
+   * @param ParameterBagInterface $pb
+   * @param ObjectManager $om
+   */
+  public function __construct(ImageGenerationHelper $igh, ParameterBagInterface $pb, ObjectManager $om) {
+    parent::__construct($pb, $om);
+
+    $this->igh = $igh;
+  }
 
   protected function configure() {
     $this
-      ->setName(self::name)
+      ->setName(self::NAME)
       ->setDescription('Generate a specific format for an image.')
 
       ->addArgument('format',     InputArgument::REQUIRED, 'The format to generate.')
@@ -34,7 +53,7 @@ class GenerateCommand extends AbstractCommand {
     // Enlarge resources
     $this->enlargeResources();
 
-    $config = $this->getContainer()->getParameter('hbm.image_delivery');
+    $config = $this->pb->get('hbm.image_delivery');
 
     // Arguments
     $image = $input->getArgument('image');
@@ -45,9 +64,7 @@ class GenerateCommand extends AbstractCommand {
     /** @var Image $imageObj */
     $imageObj = NULL;
     if ($image) {
-      /** @var ObjectManager $om */
-      $om = $this->getContainer()->get('doctrine')->getManager();
-      $repo = $om->getRepository($config['settings']['entity_name']);
+      $repo = $this->om->getRepository($config['settings']['entity_name']);
 
       $imageObj = $repo->find($image);
     }
@@ -77,7 +94,7 @@ class GenerateCommand extends AbstractCommand {
       return 404;
     }
 
-    $this->getImageGenerationHelper()->generate($path_orig, $path_cache, $settings);
+    $this->igh->generate($path_orig, $path_cache, $settings);
 
     // Use image optimization tools.
     foreach ($settings['optimizations'] as $optimization) {
@@ -116,7 +133,7 @@ class GenerateCommand extends AbstractCommand {
    * @param \Symfony\Component\Console\Output\OutputInterface|NULL $output
    */
   private function addMetadata($path, Image $image, OutputInterface $output = NULL) : void {
-    $exif = $this->getContainer()->getParameter('hbm.image_delivery.exif');
+    $exif = $this->pb->get('hbm.image_delivery.exif');
 
     $parts = [];
 
@@ -229,13 +246,6 @@ class GenerateCommand extends AbstractCommand {
       $output->writeln('<cc2note>'.$command.'</cc2note>');
     }
     exec($command);
-  }
-
-  /**
-   * @return ImageGenerationHelper|object
-   */
-  private function getImageGenerationHelper() {
-    return $this->getContainer()->get('hbm.helper.image_generation');
   }
 
 }
