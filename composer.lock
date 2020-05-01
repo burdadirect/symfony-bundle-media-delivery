@@ -96,12 +96,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/burdanews/symfony-bundle-helper.git",
-                "reference": "19c77583fec55cc7014b753aa6a648111dc8d96c"
+                "reference": "981913166dbe8b081d1e61ff48ac472759d4acbb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/burdanews/symfony-bundle-helper/zipball/19c77583fec55cc7014b753aa6a648111dc8d96c",
-                "reference": "19c77583fec55cc7014b753aa6a648111dc8d96c",
+                "url": "https://api.github.com/repos/burdanews/symfony-bundle-helper/zipball/981913166dbe8b081d1e61ff48ac472759d4acbb",
+                "reference": "981913166dbe8b081d1e61ff48ac472759d4acbb",
                 "shasum": ""
             },
             "require": {
@@ -147,7 +147,7 @@
                 "source": "https://github.com/burdanews/symfony-bundle-helper/tree/master",
                 "issues": "https://github.com/burdanews/symfony-bundle-helper/issues"
             },
-            "time": "2020-05-01T18:25:30+00:00"
+            "time": "2020-05-01T22:38:46+00:00"
         },
         {
             "name": "doctrine/annotations",
