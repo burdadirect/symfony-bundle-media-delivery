@@ -109,3 +109,56 @@ An example of the php file can be found under `Resources/public/image.php` or `R
         rewrite ^/imagecache/(.*?)/(.*?)/(.*)$ /image.php?image-format=$1&image-id=$2&image-path=$3 last;
     }
 ```
+
+### Custom kernel boot file
+
+```
+<?php
+
+use APP\Kernel;
+use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\HttpFoundation\Request;
+
+require dirname(__DIR__).'/config/bootstrap.php';
+
+umask(0002);
+
+if ($_SERVER['APP_DEBUG']) {
+  umask(0000);
+
+  Debug::enable();
+}
+
+if ($trustedProxies = $_SERVER['TRUSTED_PROXIES'] ?? $_ENV['TRUSTED_PROXIES'] ?? false) {
+  Request::setTrustedProxies(explode(',', $trustedProxies), Request::HEADER_X_FORWARDED_ALL ^ Request::HEADER_X_FORWARDED_HOST);
+}
+
+if ($trustedHosts = $_SERVER['TRUSTED_HOSTS'] ?? $_ENV['TRUSTED_HOSTS'] ?? false) {
+  Request::setTrustedHosts([$trustedHosts]);
+}
+
+$kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
+$kernel->boot();
+
+/** @var \HBM\MediaDeliveryBundle\Service\ImageDeliveryHelper $imageDeliveryHelper */
+$imageDeliveryHelper = $kernel->getContainer()->get('hbm.helper.image_delivery');
+
+$response = $imageDeliveryHelper->dispatch(
+  $_GET['image-format'] ?? NULL,
+  $_GET['image-id'] ?? NULL,
+  $_GET['image-path'] ?? NULL
+);
+
+$response->send();
+
+// OR
+// /** @var VideoDeliveryHelper $videoDeliveryHelper */
+// $videoDeliveryHelper = $kernel->getContainer()->get('hbm.helper.video_delivery');
+// 
+// $response = $videoDeliveryHelper->dispatch(
+//   $_GET['video-id'],
+//   $_GET['video-path']
+// );
+// 
+// $response->send();
+```
