@@ -205,7 +205,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     return $this->formatDefault;
   }
 
-  public function getFormatsBlurred() {
+  public function getFormatsBlurred() : array {
     if ($this->formatsBlurred === NULL) {
       $this->formatsBlurred = [];
 
@@ -219,7 +219,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     return $this->formatsBlurred;
   }
 
-  public function getFormatsWatermarked() {
+  public function getFormatsWatermarked() : array {
     if ($this->formatsWatermarked === NULL) {
       $this->formatsWatermarked = [];
 
@@ -379,7 +379,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     return $this->hmacHelper->sign($stringToSign, $clientSecret);
   }
 
-  public function getFileCaches($file, $format = NULL) {
+  public function getFileCaches($file, $format = NULL) : array {
     $retinaValues = [TRUE, FALSE];
     $blurredValues = [TRUE, FALSE];
     $watermarkedValues = [TRUE, FALSE];
@@ -476,8 +476,6 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     // ROUTE PARAMS
     $invalidRequest = FALSE;
     if (empty($format)) {
-      $formatObj = $this->createFormatObjFromString($this->getFormatDefault());
-
       if ($this->debug) {
         $this->logger->error('Format is null.');
       }
@@ -515,10 +513,11 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     }
 
     if ($invalidRequest) {
+      $formatObj = $this->createFormatObjFromString($this->getFormatDefault());
       return $this->generateAndServe(array_merge([
         'image'      => NULL,
         'path-orig'  => $fallbacks['412'],
-        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $this->createFormatObjFromString($format)),
+        'path-cache' => $dirCache.$this->getFileCache(basename($fallbacks['412']), $formatObj),
       ], $formatArguments), 412, $request);
     }
 
