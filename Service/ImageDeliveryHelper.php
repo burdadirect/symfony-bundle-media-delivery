@@ -67,19 +67,18 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   /**
    * Returns an image url.
    *
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User $user
+   * @param Image $image
+   * @param User|null $user
    * @param null $format
    * @param bool $retina
-   * @param null $watermarked
    * @param null $blurred
+   * @param null $watermarked
    * @param null $duration
    * @param null $clientId
    * @param null $clientSecret
    *
    * @return string
    *
-   * @throws \Exception
    */
   public function getSrc(Image $image, User $user = NULL, $format = NULL, $retina = FALSE, $blurred = NULL, $watermarked = NULL, $duration = NULL, $clientId = NULL, $clientSecret = NULL) : string {
     // CLIENT ID
@@ -476,21 +475,15 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     // ROUTE PARAMS
     $invalidRequest = FALSE;
     if (empty($format)) {
-      if ($this->debug) {
-        $this->logger->error('Format is null.');
-      }
+      $this->log('Format is null.');
       $invalidRequest = TRUE;
     }
     if (empty($format)) {
-      if ($this->debug) {
-        $this->logger->error('ID is null.');
-      }
+      $this->log('ID is null.');
       $invalidRequest = TRUE;
     }
     if (empty($format)) {
-      if ($this->debug) {
-        $this->logger->error('File is null.');
-      }
+      $this->log('File is null.');
       $invalidRequest = TRUE;
     }
 
@@ -498,17 +491,13 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     $keys = ['ts', 'sec', 'client', 'sig'];
     foreach ($keys as $key) {
       if (!isset($query[$key])) {
-        if ($this->debug) {
-          $this->logger->error('Query param "'.$key.'" is missing.');
-        }
+        $this->log('Query param "'.$key.'" is missing.');
         $invalidRequest = TRUE;
       }
     }
 
     if (!isset($formats[$formatObj->getFormat()])) {
-      if ($this->debug) {
-        $this->logger->error('Format is invalid.');
-      }
+      $this->log('Format is invalid.');
       $invalidRequest = TRUE;
     }
 
@@ -529,19 +518,13 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     $access = TRUE;
     if ($formats[$formatObj->getFormat()]['restricted']) {
       if (!isset($clients[$query['client']])) {
-        if ($this->debug) {
-          $this->logger->error('Client is missing.');
-        }
+        $this->log('Client is missing.');
         $access = FALSE;
       } elseif ($query['sig'] !== $this->getSignature($file, $id, $query['ts'], $query['sec'], $format, $query['client'], $clients[$query['client']]['secret'])) {
-        if ($this->debug) {
-          $this->logger->error('Signature is invalid.');
-        }
+        $this->log('Signature is invalid.');
         $access = FALSE;
       } elseif (($query['ts'] + $query['sec']) < time()) {
-        if ($this->debug) {
-          $this->logger->error('Timestamp is too old.');
-        }
+        $this->log('Timestamp is too old.');
         $access = FALSE;
       }
     }
@@ -569,9 +552,8 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       ], $formatArguments), 200, $request);
     }
 
-    if ($this->debug) {
-      $this->logger->error('Orig file "'.$fileOrig.'" can not be found.');
-    }
+    $this->log('Orig file "'.$fileOrig.'" can not be found.');
+
     return $this->generateAndServe(array_merge([
       'image'      => NULL,
       'path-orig'  => $fallbacks['404'],
@@ -580,7 +562,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
   }
 
   /**
-   * Serves (and generats) a specific format for an image.
+   * Serves (and generates) a specific format for an image.
    *
    * @param $arguments
    * @param $statusCode
@@ -610,6 +592,15 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
     }
 
     return $this->serve($file, $statusCode, $request);
+  }
+
+  /**
+   * @param $message
+   */
+  private function log(string $message) : void {
+    if ($this->debug) {
+      $this->logger->error($message);
+    }
   }
 
 }
