@@ -478,11 +478,11 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper {
       $this->log('Format is null.');
       $invalidRequest = TRUE;
     }
-    if (empty($format)) {
+    if (empty($id)) {
       $this->log('ID is null.');
       $invalidRequest = TRUE;
     }
-    if (empty($format)) {
+    if (empty($file)) {
       $this->log('File is null.');
       $invalidRequest = TRUE;
     }
