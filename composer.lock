@@ -153,12 +153,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/burdadirect/symfony-bundle-helper.git",
-                "reference": "f2b9b1bbb0d0c2557698b88c71b1eedf7252b68f"
+                "reference": "2910f157758fcaefd0b50ed2d20e8d8c09c032da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/burdadirect/symfony-bundle-helper/zipball/f2b9b1bbb0d0c2557698b88c71b1eedf7252b68f",
-                "reference": "f2b9b1bbb0d0c2557698b88c71b1eedf7252b68f",
+                "url": "https://api.github.com/repos/burdadirect/symfony-bundle-helper/zipball/2910f157758fcaefd0b50ed2d20e8d8c09c032da",
+                "reference": "2910f157758fcaefd0b50ed2d20e8d8c09c032da",
                 "shasum": ""
             },
             "require": {
@@ -168,14 +168,14 @@
                 "ext-mbstring": "*",
                 "ext-tidy": "*",
                 "guzzlehttp/guzzle": "^7.0",
-                "php": ">=7.3",
+                "php": "^7.4.0",
                 "symfony/config": "^4.4|^5.2",
                 "symfony/dependency-injection": "^4.4|^5.2",
                 "symfony/framework-bundle": "^4.4|^5.2"
             },
             "require-dev": {
                 "phpunit/phpunit": "^8.0|^9.0",
-                "roave/security-advisories": "dev-master",
+                "roave/security-advisories": "dev-latest",
                 "symfony/phpunit-bridge": "^4.4|^5.2"
             },
             "default-branch": true,
@@ -204,7 +204,7 @@
                 "source": "https://github.com/burdadirect/symfony-bundle-helper/tree/main",
                 "issues": "https://github.com/burdadirect/symfony-bundle-helper/issues"
             },
-            "time": "2021-09-02T08:56:24+00:00"
+            "time": "2021-09-22T18:23:24+00:00"
         },
         {
             "name": "composer/package-versions-deprecated",
