@@ -19,7 +19,7 @@
     }
   ],
   "require": {
-    "php": "^7.4.1",
+    "php": "^7.4.0",
     "ext-imagick" : "*",
     "ext-fileinfo": "*",
     "burdadirect/symfony-bundle-helper": "dev-main",
