@@ -19,10 +19,10 @@
     }
   ],
   "require": {
-    "php": ">=7.3",
+    "php": "^7.4.1",
     "ext-imagick" : "*",
     "ext-fileinfo": "*",
-    "burdadirect/symfony-bundle-helper": "dev-master",
+    "burdadirect/symfony-bundle-helper": "dev-main",
     "symfony/config": "^4.4|^5.2",
     "symfony/dependency-injection": "^4.4|^5.2",
     "symfony/http-foundation": "^4.4|^5.2",
@@ -33,6 +33,6 @@
     "imagine/imagine" : "^1.2"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-master"
+    "roave/security-advisories": "dev-latest"
   }
 }
