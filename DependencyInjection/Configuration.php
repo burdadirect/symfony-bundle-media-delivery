@@ -17,12 +17,7 @@ class Configuration implements ConfigurationInterface {
    */
   public function getConfigTreeBuilder() {
     $treeBuilder = new TreeBuilder('hbm_media_delivery');
-
-    if (method_exists($treeBuilder, 'getRootNode')) {
-      $rootNode = $treeBuilder->getRootNode();
-    } else {
-      $rootNode = $treeBuilder->root('hbm_media_delivery');
-    }
+    $rootNode = $treeBuilder->getRootNode();
 
     $overlayGravityInfo = 'Can be an integer between 1 and 9. ';
     $overlayGravityInfo .= '1: top left, 2: top center, 3: top right, ';
@@ -143,8 +138,8 @@ class Configuration implements ConfigurationInterface {
   }
 
   private function getOverlayConfig($overlayName, $blurDefault, $blurInfo, $gravityDefault, $gravityInfo, $scaleDefault, $scaleInfo) {
-    $builder = new TreeBuilder();
-    $node = $builder->root($overlayName);
+    $builder = new TreeBuilder($overlayName);
+    $node = $builder->getRootNode();
 
     $node
       ->children()
@@ -158,8 +153,8 @@ class Configuration implements ConfigurationInterface {
   }
 
   private function getClientConfig() {
-    $builder = new TreeBuilder();
-    $node = $builder->root('clients');
+    $builder = new TreeBuilder('clients');
+    $node = $builder->getRootNode();
 
     $node
       ->defaultValue([])->useAttributeAsKey('id')
@@ -175,8 +170,8 @@ class Configuration implements ConfigurationInterface {
   }
 
   private function getSettingsConfig($routeDefault, $durationDefault, $cacheDefault, $memoryLimitDefault) {
-    $builder = new TreeBuilder();
-    $node = $builder->root('settings');
+    $builder = new TreeBuilder('settings');
+    $node = $builder->getRootNode();
 
     $node
       ->addDefaultsIfNotSet()
@@ -193,8 +188,8 @@ class Configuration implements ConfigurationInterface {
   }
 
   private function getFallbackConfig() {
-    $builder = new TreeBuilder();
-    $node = $builder->root('fallbacks');
+    $builder = new TreeBuilder('fallbacks');
+    $node = $builder->getRootNode();
 
     $node
       ->addDefaultsIfNotSet()
@@ -208,8 +203,8 @@ class Configuration implements ConfigurationInterface {
   }
 
   private function getSuffixConfig($suffix, $suffixFormat, $suffixFile) {
-    $builder = new TreeBuilder();
-    $node = $builder->root($suffix);
+    $builder = new TreeBuilder($suffix);
+    $node = $builder->getRootNode();
 
     $node
       ->addDefaultsIfNotSet()
