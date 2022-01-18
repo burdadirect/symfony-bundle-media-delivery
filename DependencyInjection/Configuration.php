@@ -15,7 +15,7 @@ class Configuration implements ConfigurationInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfigTreeBuilder() {
+  public function getConfigTreeBuilder(): TreeBuilder {
     $treeBuilder = new TreeBuilder('hbm_media_delivery');
     $rootNode = $treeBuilder->getRootNode();
 
