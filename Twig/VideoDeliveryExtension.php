@@ -9,10 +9,7 @@ use Twig\TwigFilter;
 
 class VideoDeliveryExtension extends AbstractExtension {
 
-  /**
-   * @var VideoDeliveryHelper
-   */
-  protected $vdh;
+  protected VideoDeliveryHelper $vdh;
 
   /**
    * VideoDeliveryExtension constructor.
@@ -23,7 +20,7 @@ class VideoDeliveryExtension extends AbstractExtension {
     $this->vdh = $videoDeliveryHelper;
   }
 
-  public function getFilters() {
+  public function getFilters(): array {
     return [
       new TwigFilter('videoSrc', [$this, 'videoSrcFilter']),
     ];

@@ -60,7 +60,7 @@ class GenerateCommand extends AbstractCommand {
       ->addOption('oScale',   NULL, InputOption::VALUE_OPTIONAL, 'Scale the overlay (inset = scale to fit, orig = original size).');
   }
 
-  protected function execute(InputInterface $input, OutputInterface $output) {
+  protected function execute(InputInterface $input, OutputInterface $output): int {
     // Enlarge resources
     $this->enlargeResources();
 
@@ -121,7 +121,7 @@ class GenerateCommand extends AbstractCommand {
     return 0;
   }
 
-  private function optimize($path, $optimization, OutputInterface $output = NULL) {
+  private function optimize($path, $optimization, OutputInterface $output = NULL): void {
     // Prepare options.
     $options = $optimization['options'];
     foreach ($options as $optionKey => $optionValue) {
@@ -139,10 +139,10 @@ class GenerateCommand extends AbstractCommand {
    * Adds several metadata in exif format to image.
    *
    * @param $path
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\Image $image
+   * @param Image|null $image
    * @param \Symfony\Component\Console\Output\OutputInterface|NULL $output
    */
-  private function addMetadata($path, Image $image = NULL, OutputInterface $output = NULL) : void {
+  private function addMetadata($path, Image $image = NULL, OutputInterface $output = NULL): void {
     $exif = $this->config['exif'];
 
     $parts = [];

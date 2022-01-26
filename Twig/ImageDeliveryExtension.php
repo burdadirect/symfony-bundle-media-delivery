@@ -10,10 +10,7 @@ use Twig\TwigFilter;
 
 class ImageDeliveryExtension extends AbstractExtension {
 
-  /**
-   * @var ImageDeliveryHelper
-   */
-  protected $idh  ;
+  protected ImageDeliveryHelper $idh  ;
 
   /**
    * ImageDeliveryExtension constructor.
@@ -27,7 +24,7 @@ class ImageDeliveryExtension extends AbstractExtension {
   /**
    * @return array|TwigFilter[]
    */
-  public function getFilters() {
+  public function getFilters(): array {
     return [
       new TwigFilter('imgSrc', [$this, 'imgSrcFilter']),
     ];
