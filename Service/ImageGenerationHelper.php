@@ -2,10 +2,10 @@
 
 namespace HBM\MediaDeliveryBundle\Service;
 
+use HBM\MediaDeliveryBundle\Image\FloatBox;
 use Imagine\Image\Palette\Grayscale;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\BoxInterface;
-use Imagine\Image\PointInterface;
 use Imagine\Image\Point;
 use Imagine\Imagick\Image;
 use Imagine\Imagick\Imagine;
@@ -19,10 +19,7 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class ImageGenerationHelper {
 
-  /**
-   * @var Filesystem
-   */
-  private $filesystem;
+  private ?Filesystem $filesystem = NULL;
 
   /**
    * @return Filesystem
@@ -82,8 +79,6 @@ class ImageGenerationHelper {
     }
   }
 
-
-
   protected function handleColorProfiles(ImageInterface $image) : ImageInterface {
     try {
       if ($image->getImagick()->getColorspace() === \Imagick::COLORSPACE_GRAY) {
@@ -116,7 +111,7 @@ class ImageGenerationHelper {
       $settings['h'] = round($percent/100 * $image->getSize()->getHeight());
     }
 
-    $image = $this->pbyThumbnail($image, new PbyBox($settings['w'], $settings['h']), $settings);
+    $image = $this->pbyThumbnail($image, new FloatBox($settings['w'], $settings['h']), $settings);
 
     // Apply effects
     if ($settings['blur']) {
@@ -177,13 +172,13 @@ class ImageGenerationHelper {
     $image = $this->handleColorProfiles($image);
 
     $point = new Point($settings['clip']['x'], $settings['clip']['y']);
-    $box = new PbyBox($settings['clip']['w'], $settings['clip']['h']);
+    $box = new FloatBox($settings['clip']['w'], $settings['clip']['h']);
     $image->crop($point, $box);
 
     if ($settings['retina']) {
-      $box = new PbyBox(2*$settings['w'], 2*$settings['h']);
+      $box = new FloatBox(2*$settings['w'], 2*$settings['h']);
     } else {
-      $box = new PbyBox($settings['w'], $settings['h']);
+      $box = new FloatBox($settings['w'], $settings['h']);
     }
     $image->resize($box);
 
@@ -197,7 +192,7 @@ class ImageGenerationHelper {
     $image = $this->handleColorProfiles($image);
 
     $size = $image->getSize();
-    $size = new PbyBox($size->getWidth(), $size->getHeight());
+    $size = new FloatBox($size->getWidth(), $size->getHeight());
 
     // Check dimensions
     $resize = FALSE;
@@ -211,7 +206,7 @@ class ImageGenerationHelper {
     }
 
     // Desired dimensions
-    $box = new PbyBox($settings['w'], $settings['h']);
+    $box = new FloatBox($settings['w'], $settings['h']);
 
     // Ratios
     $ratioCrop = $settings['w'] / $settings['h'];
@@ -241,7 +236,7 @@ class ImageGenerationHelper {
     }
 
     // Determine scale
-    $scale = new PbyBox($size->getWidth(), $size->getHeight());
+    $scale = new FloatBox($size->getWidth(), $size->getHeight());
 
     if ($ratioCrop > $ratioImage) {
       $scale = $scale->scale($box->getWidthFloat() / $size->getWidthFloat());
@@ -570,7 +565,7 @@ class ImageGenerationHelper {
     $ratioResize = $box->getWidth() / $box->getHeight();
     $ratioImage = $size->getWidth() / $size->getHeight();
 
-    $scale = new PbyBox($size->getWidth(), $size->getHeight());
+    $scale = new FloatBox($size->getWidth(), $size->getHeight());
     if ($ratioResize > $ratioImage) {
       $scale = $scale->scale($box->getHeight() / $size->getHeight());
     } else {
@@ -589,86 +584,3 @@ class ImageGenerationHelper {
 
 }
 
-class PbyBox implements BoxInterface
-{
-  /**
-   * @var float
-   */
-  private $width;
-
-  /**
-   * @var float
-   */
-  private $height;
-
-  /**
-   * Constructs the Size with given width and height
-   *
-   * @param float $width
-   * @param float $height
-   *
-   * @throws \InvalidArgumentException
-   */
-  public function __construct($width, $height)
-  {
-    $this->width  = $width;
-    $this->height = $height;
-  }
-
-  public function getWidth()
-  {
-    return round($this->width);
-  }
-
-  public function getWidthFloat()
-  {
-    return $this->width;
-  }
-
-  public function getHeight()
-  {
-    return round($this->height);
-  }
-
-  public function getHeightFloat()
-  {
-    return $this->height;
-  }
-
-  public function scale($ratio)
-  {
-    return new PbyBox($ratio * $this->width, $ratio * $this->height);
-  }
-
-  public function increase($size)
-  {
-    return new PbyBox((float) $size + $this->width, (float) $size + $this->height);
-  }
-
-  public function contains(BoxInterface $box, PointInterface $start = null)
-  {
-    $start = $start ? $start : new Point(0, 0);
-
-    return $start->in($this) && $this->width >= $box->getWidth() + $start->getX() && $this->height >= $box->getHeight() + $start->getY();
-  }
-
-  public function square()
-  {
-    return $this->width * $this->height;
-  }
-
-  public function __toString()
-  {
-    return sprintf('%dx%d px', $this->width, $this->height);
-  }
-
-  public function widen($width)
-  {
-    return $this->scale($width / $this->width);
-  }
-
-  public function heighten($height)
-  {
-    return $this->scale($height / $this->height);
-  }
-}
