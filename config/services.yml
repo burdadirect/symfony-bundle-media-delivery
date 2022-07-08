@@ -43,6 +43,7 @@ services:
 
     # CONTROLLER
     HBM\MediaDeliveryBundle\Controller\DeliveryController:
+        tags: ['controller.service_arguments']
 
     # COMMAND
     hbm.command.image_generation:
