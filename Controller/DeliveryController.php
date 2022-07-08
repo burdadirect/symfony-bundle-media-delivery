@@ -12,15 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DeliveryController extends AbstractController {
 
-  /**
-   * @var ImageDeliveryHelper
-   */
-  private $idh;
+  private ImageDeliveryHelper $idh;
 
-  /**
-   * @var VideoDeliveryHelper
-   */
-  private $vdh;
+  private VideoDeliveryHelper $vdh;
 
   /**
    * DeliveryController constructor.

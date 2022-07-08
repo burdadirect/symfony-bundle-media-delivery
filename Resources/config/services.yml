@@ -46,6 +46,8 @@ services:
         arguments:
             - '@hbm.helper.image_delivery'
             - '@hbm.helper.video_delivery'
+        tags:
+            - { name: controller.service_arguments }
 
     # COMMAND
     hbm.command.image_generation:
