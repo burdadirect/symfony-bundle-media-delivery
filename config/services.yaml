@@ -1,6 +1,14 @@
 services:
     _defaults:
         public: true
+        autowire: false
+        autoconfigure: false
+
+    # CONTROLLER
+    HBM\MediaDeliveryBundle\Controller\DeliveryController:
+        calls:
+            - { method: setContainer, arguments: [ '@service_container' ] }
+        tags: ['controller.service_arguments']
 
     # HELPER
     hbm.helper.video_delivery:
@@ -40,10 +48,6 @@ services:
             - '@hbm.helper.video_delivery'
         tags:
             - { name: twig.extension }
-
-    # CONTROLLER
-    HBM\MediaDeliveryBundle\Controller\DeliveryController:
-        tags: ['controller.service_arguments']
 
     # COMMAND
     hbm.command.image_generation:
