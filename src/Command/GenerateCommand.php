@@ -5,6 +5,7 @@ namespace HBM\MediaDeliveryBundle\Command;
 use Doctrine\Persistence\ObjectManager;
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Image;
 use HBM\MediaDeliveryBundle\Service\ImageGenerationHelper;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -118,7 +119,7 @@ class GenerateCommand extends AbstractCommand {
       $this->addMetadata($path_cache, $imageObj, $output);
     }
 
-    return 0;
+    return Command::SUCCESS;
   }
 
   private function optimize($path, $optimization, OutputInterface $output = NULL): void {

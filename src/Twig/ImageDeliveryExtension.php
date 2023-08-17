@@ -26,7 +26,7 @@ class ImageDeliveryExtension extends AbstractExtension {
    */
   public function getFilters(): array {
     return [
-      new TwigFilter('imgSrc', [$this, 'imgSrcFilter']),
+      new TwigFilter('imgSrc', $this->imgSrcFilter(...)),
     ];
   }
 

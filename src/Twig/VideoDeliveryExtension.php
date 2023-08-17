@@ -22,7 +22,7 @@ class VideoDeliveryExtension extends AbstractExtension {
 
   public function getFilters(): array {
     return [
-      new TwigFilter('videoSrc', [$this, 'videoSrcFilter']),
+      new TwigFilter('videoSrc', $this->videoSrcFilter(...)),
     ];
   }
 
