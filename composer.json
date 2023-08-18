@@ -22,7 +22,7 @@
     "php": "^8.2.0",
     "ext-imagick" : "*",
     "ext-fileinfo": "*",
-    "burdadirect/symfony-bundle-helper": "dev-main",
+    "burdadirect/symfony-bundle-helper": "^1.4",
     "symfony/config": "^5.4",
     "symfony/dependency-injection": "^5.4",
     "symfony/http-foundation": "^5.4",
