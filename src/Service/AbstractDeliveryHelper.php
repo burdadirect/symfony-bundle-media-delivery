@@ -16,154 +16,131 @@ use Symfony\Component\Routing\RouterInterface;
  *
  * Makes image delivery easy.
  */
-abstract class AbstractDeliveryHelper {
+abstract class AbstractDeliveryHelper
+{
+    /** @var array */
+    protected $config;
 
-  /**
-   * @var array
-   */
-  protected $config;
+    /** @var bool */
+    protected $debug;
 
-  /**
-   * @var boolean
-   */
-  protected $debug;
+    /** @var ParameterBagInterface */
+    protected $parameterBag;
 
-  /****************************************************************************/
+    /** @var SanitizingHelper */
+    protected $sanitizingHelper;
 
-  /**
-   * @var ParameterBagInterface
-   */
-  protected $parameterBag;
+    /** @var HmacHelper */
+    protected $hmacHelper;
 
-  /**
-   * @var SanitizingHelper
-   */
-  protected $sanitizingHelper;
+    /** @var RouterInterface */
+    protected $router;
 
-  /**
-   * @var HmacHelper
-   */
-  protected $hmacHelper;
+    /** @var LoggerInterface */
+    protected $logger;
 
-  /**
-   * @var RouterInterface
-   */
-  protected $router;
+    /**
+     * AbstractDeliveryHelper constructor.
+     */
+    public function __construct(array $config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger)
+    {
+        $this->sanitizingHelper = $sanitizingHelper;
+        $this->hmacHelper       = $hmacHelper;
+        $this->router           = $router;
+        $this->logger           = $logger;
 
-  /**
-   * @var LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * AbstractDeliveryHelper constructor.
-   *
-   * @param array $config
-   * @param SanitizingHelper $sanitizingHelper
-   * @param HmacHelper $hmacHelper
-   * @param RouterInterface $router
-   * @param LoggerInterface $logger
-   */
-  public function __construct(array $config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger) {
-    $this->sanitizingHelper = $sanitizingHelper;
-    $this->hmacHelper = $hmacHelper;
-    $this->router = $router;
-    $this->logger = $logger;
-
-    $this->config = $config;
-    $this->debug = $this->config['debug'] ?? FALSE;
-  }
-
-  /**
-   * Calculates time and duration for hmac signature.
-   * If duration is preceeded with a ~, an aproximated value is used.
-   *
-   * @param string|integer $duration
-   * @return array
-   */
-  public function getTimeAndDuration($duration) : array {
-    $time = time();
-
-    $time_to_use = $time;
-    $duration_to_use = $duration;
-    $first_letter = $duration[0] ?? NULL;
-    if ($first_letter === '~') {
-      $duration_to_use = substr($duration, 1);
-
-      $time_to_use = $time;
-      if ($duration_to_use > 100000) {
-        $time_to_use = round($time / 10000) * 10000;
-      } elseif ($duration_to_use > 10000) {
-        $time_to_use = round($time / 1000) * 1000;
-      } elseif ($duration_to_use > 1000) {
-        $time_to_use = round($time / 100) * 100;
-      } elseif ($duration_to_use > 100) {
-        $time_to_use = round($time / 10) * 10;
-      }
+        $this->config = $config;
+        $this->debug  = $this->config['debug'] ?? false;
     }
 
-    return [
-      'time' => (int) $time_to_use,
-      'duration' => (int) $duration_to_use
-    ];
-  }
+    /**
+     * Calculates time and duration for hmac signature.
+     * If duration is preceeded with a ~, an aproximated value is used.
+     *
+     * @param int|string $duration
+     */
+    public function getTimeAndDuration($duration): array
+    {
+        $time = time();
 
-  /**
-   * @param $file
-   * @param $statusCode
-   * @param Request|NULL $request
-   *
-   * @return CustomBinaryFileResponse|Response
-   */
-  protected function serve($file, $statusCode, Request $request = NULL) {
-    if (!$file) {
-      return new Response('', $statusCode);
+        $time_to_use     = $time;
+        $duration_to_use = $duration;
+        $first_letter    = $duration[0] ?? null;
+
+        if ($first_letter === '~') {
+            $duration_to_use = substr($duration, 1);
+
+            $time_to_use = $time;
+
+            if ($duration_to_use > 100000) {
+                $time_to_use = round($time / 10000) * 10000;
+            } elseif ($duration_to_use > 10000) {
+                $time_to_use = round($time / 1000) * 1000;
+            } elseif ($duration_to_use > 1000) {
+                $time_to_use = round($time / 100) * 100;
+            } elseif ($duration_to_use > 100) {
+                $time_to_use = round($time / 10) * 10;
+            }
+        }
+
+        return [
+          'time'     => (int) $time_to_use,
+          'duration' => (int) $duration_to_use,
+        ];
     }
 
-    $cacheSec = $this->config['settings']['cache'];
-    $fileModificationTime = filemtime($file);
+    /**
+     * @return CustomBinaryFileResponse|Response
+     */
+    protected function serve($file, $statusCode, Request $request = null)
+    {
+        if (!$file) {
+            return new Response('', $statusCode);
+        }
 
-    if ($request === NULL) {
-      $request = Request::createFromGlobals();
-    }
-    if ($request->headers->has('If-Modified-Since')) {
-      $ifModifiedSinceHeader = strtotime($request->headers->get('If-Modified-Since'));
+        $cacheSec             = $this->config['settings']['cache'];
+        $fileModificationTime = filemtime($file);
 
-      if ($ifModifiedSinceHeader > $fileModificationTime) {
-        $response = new Response();
-        $response->setNotModified();
+        if ($request === null) {
+            $request = Request::createFromGlobals();
+        }
+
+        if ($request->headers->has('If-Modified-Since')) {
+            $ifModifiedSinceHeader = strtotime($request->headers->get('If-Modified-Since'));
+
+            if ($ifModifiedSinceHeader > $fileModificationTime) {
+                $response = new Response();
+                $response->setNotModified();
+
+                return $response;
+            }
+        }
+
+        $headers = [
+          'Pragma'              => 'private',
+          'Cache-Control'       => 'max-age=' . $cacheSec,
+          'Expires'             => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
+          'Last-Modified'       => gmdate('D, d M Y H:i:s', $fileModificationTime) . ' GMT',
+          'Content-Type'        => mime_content_type($file),
+          'Content-Disposition' => 'inline; filename="' . basename($file) . '"',
+        ];
+
+        /* SERVE */
+
+        if ($this->config['settings']['x_accel_redirect']) {
+            $prefix     = $this->sanitizingHelper->ensureSep($this->config['settings']['x_accel_redirect'], true, true);
+            $path       = $this->sanitizingHelper->ensureTrailingSep($this->config['folders']['cache']);
+            $pathServed = str_replace($path, $prefix, $file);
+
+            $headers['X-Accel-Redirect']  = $pathServed;
+            $headers['X-Accel-Buffering'] = 'no';
+
+            return new CustomBinaryFileResponse($file, $statusCode, $headers);
+        }
+
+        $response = new CustomBinaryFileResponse($file, $statusCode, $headers);
+        $response->prepare($request);
+
         return $response;
-      }
     }
-
-    $headers = [
-      'Pragma' => 'private',
-      'Cache-Control' => 'max-age='.$cacheSec,
-      'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
-      'Last-Modified' => gmdate('D, d M Y H:i:s', $fileModificationTime).' GMT',
-      'Content-Type' => mime_content_type($file),
-      'Content-Disposition' => 'inline; filename="'.basename($file).'"',
-    ];
-
-
-    /**************************************************************************/
-    /* SERVE                                                                  */
-    /**************************************************************************/
-
-    if ($this->config['settings']['x_accel_redirect']) {
-      $prefix = $this->sanitizingHelper->ensureSep($this->config['settings']['x_accel_redirect'], TRUE, TRUE);
-      $path = $this->sanitizingHelper->ensureTrailingSep($this->config['folders']['cache']);
-      $pathServed = str_replace($path, $prefix, $file);
-
-      $headers['X-Accel-Redirect'] = $pathServed;
-      $headers['X-Accel-Buffering'] = 'no';
-      return new CustomBinaryFileResponse($file, $statusCode, $headers);
-    }
-
-    $response = new CustomBinaryFileResponse($file, $statusCode, $headers);
-    $response->prepare($request);
-
-    return $response;
-  }
-
 }
