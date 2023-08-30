@@ -16,6 +16,10 @@
     {
       "type": "vcs",
       "url": "git@github.com:burdadirect/symfony-bundle-helper.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:burdadirect/codestyle.git"
     }
   ],
   "require": {
@@ -33,11 +37,13 @@
     "imagine/imagine" : "^1.2"
   },
   "require-dev": {
+    "burdadirect/codestyle": "dev-main",
     "roave/security-advisories": "dev-latest"
   },
   "config": {
     "allow-plugins": {
-      "composer/package-versions-deprecated": true
+      "composer/package-versions-deprecated": true,
+      "phpstan/extension-installer": true
     }
   }
 }
