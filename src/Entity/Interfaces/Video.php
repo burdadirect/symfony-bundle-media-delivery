@@ -2,13 +2,11 @@
 
 namespace HBM\MediaDeliveryBundle\Entity\Interfaces;
 
+interface Video
+{
+    public function getId();
 
-interface Video {
+    public function getPath();
 
-  public function getId();
-
-  public function getPath();
-
-  public function getPathFromEncoding($encoding);
-
+    public function getPathFromEncoding($encoding);
 }

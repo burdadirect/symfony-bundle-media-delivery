@@ -2,61 +2,59 @@
 
 namespace HBM\MediaDeliveryBundle\Entity\Interfaces;
 
+interface Image
+{
+    public function getId();
 
-interface Image {
+    public function getFile();
 
-  public function getId();
+    public function getWidth();
 
-  public function getFile();
+    public function getHeight();
 
-  public function getWidth();
+    public function getCredit();
 
-  public function getHeight();
+    public function getFSK();
 
-  public function getCredit();
+    /**
+     * @return bool
+     */
+    public function useWatermarkedFormat(User $user = null);
 
-  public function getFSK();
+    /**
+     * @return bool
+     */
+    public function useBlurredFormat(User $user = null);
 
-  /**
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
-   * @return boolean
-   */
-  public function useWatermarkedFormat(User $user = NULL);
+    /**
+     * Get clipping for a certain format.
+     *
+     * @param string $format
+     *
+     * @return array:
+     */
+    public function getClipping($format);
 
-  /**
-   * @param \HBM\MediaDeliveryBundle\Entity\Interfaces\User|NULL $user
-   * @return boolean
-   */
-  public function useBlurredFormat(User $user = NULL);
+    /**
+     * Checks if a format hat a custom clipping.
+     *
+     * @param string $format
+     *
+     * @return bool
+     */
+    public function hasClipping($format);
 
-  /**
-   * Get clipping for a certain format.
-   *
-   * @param string $format
-   * @return array:
-   */
-  public function getClipping($format);
+    /**
+     * Get focal point.
+     *
+     * @return array:
+     */
+    public function getFocalPoint();
 
-  /**
-   * Checks if a format hat a custom clipping.
-   *
-   * @param string $format
-   * @return boolean
-   */
-  public function hasClipping($format);
-
-  /**
-   * Get focal point.
-   *
-   * @return array:
-   */
-  public function getFocalPoint();
-
-  /**
-   * Checks if a focal point is defined.
-   *
-   * @return boolean
-   */
-  public function hasFocalPoint();
-
+    /**
+     * Checks if a focal point is defined.
+     *
+     * @return bool
+     */
+    public function hasFocalPoint();
 }

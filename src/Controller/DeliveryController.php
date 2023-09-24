@@ -10,42 +10,32 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class DeliveryController extends AbstractController {
+class DeliveryController extends AbstractController
+{
+    /**
+     * @throws \Exception
+     *
+     * @return CustomBinaryFileResponse|Response
+     */
+    public function serveImage(ImageDeliveryHelper $idh, Request $request, $format, $id, $file)
+    {
+        return $idh->dispatch(
+            $format,
+            $id,
+            $file,
+            $request
+        );
+    }
 
-  /**
-   * @param ImageDeliveryHelper $idh
-   * @param Request $request
-   * @param $format
-   * @param $id
-   * @param $file
-   *
-   * @return CustomBinaryFileResponse|Response
-   *
-   * @throws \Exception
-   */
-  public function serveImage(ImageDeliveryHelper $idh, Request $request, $format, $id, $file) {
-    return $idh->dispatch(
-      $format,
-      $id,
-      $file,
-      $request
-    );
-  }
-
-  /**
-   * @param VideoDeliveryHelper $vdh
-   * @param Request $request
-   * @param $id
-   * @param $file
-   *
-   * @return BinaryFileResponse|Response
-   */
-  public function serveVideo(VideoDeliveryHelper $vdh, Request $request, $id, $file) {
-    return $vdh->dispatch(
-      $id,
-      $file,
-      $request
-    );
-  }
-
+    /**
+     * @return BinaryFileResponse|Response
+     */
+    public function serveVideo(VideoDeliveryHelper $vdh, Request $request, $id, $file)
+    {
+        return $vdh->dispatch(
+            $id,
+            $file,
+            $request
+        );
+    }
 }
