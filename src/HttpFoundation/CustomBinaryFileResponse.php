@@ -14,7 +14,7 @@ class CustomBinaryFileResponse extends BinaryFileResponse
      *
      * {@inheritdoc}
      */
-    public function sendContent()
+    public function sendContent(): static
     {
         if ($this->maxlen === 0) {
             return $this;
