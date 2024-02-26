@@ -15,14 +15,9 @@ class GenerateCommand extends AbstractCommand
 {
     public const NAME = 'hbm:image-delivery:generate';
 
-    /** @var array */
-    private $config;
-
-    /** @var ImageGenerationHelper */
-    protected $igh;
-
-    /** @var ObjectManager */
-    protected $om;
+    private array $config;
+    protected ImageGenerationHelper $igh;
+    protected ObjectManager $om;
 
     /**
      * GenerateCommand constructor.
@@ -36,7 +31,7 @@ class GenerateCommand extends AbstractCommand
         $this->om     = $om;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
           ->setName(self::NAME)
