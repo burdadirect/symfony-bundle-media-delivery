@@ -16,7 +16,9 @@ class GenerateCommand extends AbstractCommand
     public const NAME = 'hbm:image-delivery:generate';
 
     private array $config;
+
     protected ImageGenerationHelper $igh;
+
     protected ObjectManager $om;
 
     /**
@@ -106,44 +108,46 @@ class GenerateCommand extends AbstractCommand
         return Command::SUCCESS;
     }
 
-    private function determineImagePrefix(string $image): ?string {
-      $sep = $this->config['settings']['entity_id_separator'];
-      foreach (array_keys($this->config['settings']['entity_names']) as $prefix) {
-        if (str_starts_with($image, $prefix.$sep)) {
-          return $prefix;
+    private function determineImagePrefix(string $image): ?string
+    {
+        $sep = $this->config['settings']['entity_id_separator'];
+        foreach (array_keys($this->config['settings']['entity_names']) as $prefix) {
+            if (str_starts_with($image, $prefix . $sep)) {
+                return $prefix;
+            }
         }
-      }
 
-      return null;
+        return null;
     }
 
-    private function determineImageObject(?string $image): ?Image {
-      if (!$image) {
-        return null;
-      }
+    private function determineImageObject(?string $image): ?Image
+    {
+        if (!$image) {
+            return null;
+        }
 
-      $prefix = $this->determineImagePrefix($image);
-      $entityName = null;
-      $entityCallable = null;
-      if ($prefix) {
-        $entityName = $this->config['settings']['entity_names'][$prefix] ?? null;
-        $entityCallable = $this->config['settings']['entity_callables'][$prefix] ?? null;
-      }
+        $prefix         = $this->determineImagePrefix($image);
+        $entityName     = null;
+        $entityCallable = $this->config['settings']['entity_callable'] ?? null;
 
-      if ($entityName) {
-        $sep = $this->config['settings']['entity_id_separator'];
-        $repo = $this->om->getRepository($entityName);
-        $image = substr($image, strlen($prefix.$sep));
-      } else {
-        $repo = $this->om->getRepository($this->config['settings']['entity_name']);
-      }
+        if ($prefix) {
+            $entityName     = $this->config['settings']['entity_names'][$prefix] ?? null;
+            $entityCallable = $this->config['settings']['entity_callables'][$prefix] ?? null;
+        }
 
-      $imageObj = $repo->find($image);
-      if ($entityCallable) {
-        return $imageObj->{$entityCallable}();
-      }
+        if ($entityName) {
+            $sep   = $this->config['settings']['entity_id_separator'];
+            $repo  = $this->om->getRepository($entityName);
+            $image = substr($image, strlen($prefix . $sep));
+        } else {
+            $repo = $this->om->getRepository($this->config['settings']['entity_name']);
+        }
 
-      return $imageObj;
+        $imageObj = $repo->find($image);
+        if ($entityCallable) {
+            return $imageObj?->{$entityCallable}();
+        }
+        return $imageObj;
     }
 
     private function optimize($path, $optimization, OutputInterface $output = null): void

@@ -181,6 +181,7 @@ class Configuration implements ConfigurationInterface
           ->addDefaultsIfNotSet()
           ->children()
             ->scalarNode('entity_name')->end()
+            ->scalarNode('entity_callable')->end()
             ->arrayNode('entity_names')
               ->useAttributeAsKey('name')
               ->prototype('scalar')->end()
