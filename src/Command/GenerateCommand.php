@@ -59,14 +59,7 @@ class GenerateCommand extends AbstractCommand
         $path_orig  = $input->getArgument('path-orig');
         $path_cache = $input->getArgument('path-cache');
 
-        /** @var Image $imageObj */
-        $imageObj = null;
-
-        if ($image) {
-            $repo = $this->om->getRepository($this->config['settings']['entity_name']);
-
-            $imageObj = $repo->find($image);
-        }
+        $imageObj = $this->determineImageObject($image);
 
         if (!isset($this->config['formats'][$format])) {
             copy($path_orig, $path_cache);
@@ -111,6 +104,46 @@ class GenerateCommand extends AbstractCommand
         }
 
         return Command::SUCCESS;
+    }
+
+    private function determineImagePrefix(string $image): ?string {
+      $sep = $this->config['settings']['entity_id_separator'];
+      foreach (array_keys($this->config['settings']['entity_names']) as $prefix) {
+        if (str_starts_with($image, $prefix.$sep)) {
+          return $prefix;
+        }
+      }
+
+      return null;
+    }
+
+    private function determineImageObject(?string $image): ?Image {
+      if (!$image) {
+        return null;
+      }
+
+      $prefix = $this->determineImagePrefix($image);
+      $entityName = null;
+      $entityCallable = null;
+      if ($prefix) {
+        $entityName = $this->config['settings']['entity_names'][$prefix] ?? null;
+        $entityCallable = $this->config['settings']['entity_callables'][$prefix] ?? null;
+      }
+
+      if ($entityName) {
+        $sep = $this->config['settings']['entity_id_separator'];
+        $repo = $this->om->getRepository($entityName);
+        $image = substr($image, strlen($prefix.$sep));
+      } else {
+        $repo = $this->om->getRepository($this->config['settings']['entity_name']);
+      }
+
+      $imageObj = $repo->find($image);
+      if ($entityCallable) {
+        return $imageObj->{$entityCallable}();
+      }
+
+      return $imageObj;
     }
 
     private function optimize($path, $optimization, OutputInterface $output = null): void
