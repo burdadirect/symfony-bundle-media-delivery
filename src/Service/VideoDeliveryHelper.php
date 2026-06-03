@@ -102,7 +102,7 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper
      *
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function dispatch($id, $file, Request $request = null)
+    public function dispatch($id, $file, ?Request $request = null)
     {
         if ($request === null) {
             $request = Request::createFromGlobals();

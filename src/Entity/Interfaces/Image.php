@@ -19,12 +19,12 @@ interface Image
     /**
      * @return bool
      */
-    public function useWatermarkedFormat(User $user = null);
+    public function useWatermarkedFormat(?User $user = null);
 
     /**
      * @return bool
      */
-    public function useBlurredFormat(User $user = null);
+    public function useBlurredFormat(?User $user = null);
 
     /**
      * Get clipping for a certain format.

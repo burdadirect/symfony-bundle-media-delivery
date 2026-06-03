@@ -150,7 +150,7 @@ class GenerateCommand extends AbstractCommand
         return $imageObj;
     }
 
-    private function optimize($path, $optimization, OutputInterface $output = null): void
+    private function optimize($path, $optimization, ?OutputInterface $output = null): void
     {
         // Prepare options.
         $options = $optimization['options'];
@@ -169,7 +169,7 @@ class GenerateCommand extends AbstractCommand
     /**
      * Adds several metadata in exif format to image.
      */
-    private function addMetadata($path, Image $image = null, OutputInterface $output = null): void
+    private function addMetadata($path, ?Image $image = null, ?OutputInterface $output = null): void
     {
         $exif = $this->config['exif'];
 
