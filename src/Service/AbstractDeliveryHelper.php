@@ -92,7 +92,7 @@ abstract class AbstractDeliveryHelper
     /**
      * @return CustomBinaryFileResponse|Response
      */
-    protected function serve($file, $statusCode, Request $request = null)
+    protected function serve($file, $statusCode, ?Request $request = null)
     {
         if (!$file) {
             return new Response('', $statusCode);

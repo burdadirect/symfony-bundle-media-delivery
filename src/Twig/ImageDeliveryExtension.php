@@ -43,7 +43,7 @@ class ImageDeliveryExtension extends AbstractExtension
      *
      * @throws \Exception
      */
-    public function imgSrcFilter(Image $image, $format = null, User $user = null, $retina = false, $blurred = null, $watermarked = null, $duration = null, $clientId = null, $clientSecret = null): string
+    public function imgSrcFilter(Image $image, $format = null, ?User $user = null, $retina = false, $blurred = null, $watermarked = null, $duration = null, $clientId = null, $clientSecret = null): string
     {
         $formatObj = $this->idh->createFormatObjFromString($format);
 

@@ -53,7 +53,7 @@ class FloatBox implements BoxInterface
         return new FloatBox((float) $size + $this->width, (float) $size + $this->height);
     }
 
-    public function contains(BoxInterface $box, PointInterface $start = null): bool
+    public function contains(BoxInterface $box, ?PointInterface $start = null): bool
     {
         $start = $start ?: new Point(0, 0);
 

@@ -58,7 +58,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
      * @param null $clientId
      * @param null $clientSecret
      */
-    public function getSrc(Image $image, User $user = null, $format = null, $retina = false, $blurred = null, $watermarked = null, $duration = null, $clientId = null, $clientSecret = null): string
+    public function getSrc(Image $image, ?User $user = null, $format = null, $retina = false, $blurred = null, $watermarked = null, $duration = null, $clientId = null, $clientSecret = null): string
     {
         // CLIENT ID
         $clientIdToUse = $clientId;
@@ -217,7 +217,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
         return $this->formatsWatermarked;
     }
 
-    public function determineStatusBlurred(Format $formatObj, $blurred, Image $image, User $user = null): void
+    public function determineStatusBlurred(Format $formatObj, $blurred, Image $image, ?User $user = null): void
     {
         if ($blurred === true) {
             $formatObj->setBlurred(true);
@@ -228,7 +228,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
         }
     }
 
-    public function determineStatusWatermarked(Format $formatObj, $watermarked, Image $image, User $user = null): void
+    public function determineStatusWatermarked(Format $formatObj, $watermarked, Image $image, ?User $user = null): void
     {
         if ($watermarked === true) {
             $formatObj->setWatermarked(true);
@@ -239,7 +239,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
         }
     }
 
-    public function createFormatObj($format, Image $image, User $user = null, $retina = false, $blurred = null, $watermarked = null): Format
+    public function createFormatObj($format, Image $image, ?User $user = null, $retina = false, $blurred = null, $watermarked = null): Format
     {
         $formatObj = new Format($format, $this->config['suffixes']);
         $formatObj->setRetina($retina);
@@ -289,7 +289,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
         return $formatObj;
     }
 
-    public function getFormatSettings(Format $formatObj, Image $image = null)
+    public function getFormatSettings(Format $formatObj, ?Image $image = null)
     {
         $arguments = $this->getFormatArguments($formatObj);
 
@@ -425,7 +425,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
      *
      * @return \HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function dispatch($format, $id, $file, Request $request = null)
+    public function dispatch($format, $id, $file, ?Request $request = null)
     {
         if ($request === null) {
             $request = Request::createFromGlobals();
@@ -546,7 +546,7 @@ class ImageDeliveryHelper extends AbstractDeliveryHelper
      *
      * @return \HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function generateAndServe($arguments, $statusCode, Request $request = null)
+    public function generateAndServe($arguments, $statusCode, ?Request $request = null)
     {
         $file = $arguments['path-cache'];
 
