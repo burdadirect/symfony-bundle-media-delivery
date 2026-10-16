@@ -14,9 +14,6 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class HBMMediaDeliveryExtension extends Extension
 {
-    /**
-     * {@inheritdoc}
-     */
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();

@@ -11,8 +11,6 @@ class CustomBinaryFileResponse extends BinaryFileResponse
      *
      * We use a custom binary file response to support fallback images with other
      * status codes than 2xx/3xx. So we do not use parent::sendContent() in case of 4xx.
-     *
-     * {@inheritdoc}
      */
     public function sendContent(): static
     {

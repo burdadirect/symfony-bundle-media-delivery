@@ -7,22 +7,14 @@ namespace HBM\MediaDeliveryBundle\Entity;
  */
 class Format
 {
-    /** @var array */
-    private $configSuffixes;
+    private string $format;
+    private array $configSuffixes;
 
-    /** @var string */
-    private $format;
+    private bool $retina = false;
+    private bool $blurred = false;
+    private bool $watermarked = false;
 
-    /** @var bool */
-    private $retina = false;
-
-    /** @var bool */
-    private $blurred = false;
-
-    /** @var bool */
-    private $watermarked = false;
-
-    public function __construct($format, $configSuffixes)
+    public function __construct(string $format, array $configSuffixes)
     {
         $this->format         = $format;
         $this->configSuffixes = $configSuffixes;
@@ -33,10 +25,7 @@ class Format
         return $this->format;
     }
 
-    /**
-     * @param string $format
-     */
-    public function setFormat($format): void
+    public function setFormat(string $format): void
     {
         $this->format = $format;
     }
@@ -46,10 +35,7 @@ class Format
         return $this->retina;
     }
 
-    /**
-     * @param bool $retina
-     */
-    public function setRetina($retina): void
+    public function setRetina(bool $retina): void
     {
         $this->retina = $retina;
     }
@@ -59,10 +45,7 @@ class Format
         return $this->blurred;
     }
 
-    /**
-     * @param bool $blurred
-     */
-    public function setBlurred($blurred): void
+    public function setBlurred(bool $blurred): void
     {
         $this->blurred = $blurred;
     }
@@ -72,10 +55,7 @@ class Format
         return $this->watermarked;
     }
 
-    /**
-     * @param bool $watermarked
-     */
-    public function setWatermarked($watermarked): void
+    public function setWatermarked(bool $watermarked): void
     {
         $this->watermarked = $watermarked;
     }

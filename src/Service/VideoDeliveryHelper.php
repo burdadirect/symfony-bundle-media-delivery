@@ -3,7 +3,9 @@
 namespace HBM\MediaDeliveryBundle\Service;
 
 use HBM\MediaDeliveryBundle\Entity\Interfaces\Video;
+use HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Makes video delivery easy.
@@ -13,13 +15,9 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper
     /**
      * Returns an image url.
      *
-     * @param null $duration
-     * @param null $clientId
-     * @param null $clientSecret
-     *
      * @throws \Exception
      */
-    public function getSrc(Video $video, $file, $duration = null, $clientId = null, $clientSecret = null): string
+    public function getSrc(Video $video, ?string $file, int|string|null $duration = null, int|string|null $clientId = null, ?string $clientSecret = null): string
     {
         // CLIENT ID
         $clientIdToUse = $clientId;
@@ -66,15 +64,15 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper
         );
 
         $paramsQuery = [
-          'sig'    => $signature,
-          'ts'     => $timeAndDuration['time'],
-          'sec'    => $timeAndDuration['duration'],
-          'client' => $clientIdToUse,
+            'sig'    => $signature,
+            'ts'     => $timeAndDuration['time'],
+            'sec'    => $timeAndDuration['duration'],
+            'client' => $clientIdToUse,
         ];
 
         $paramsRoute = [
-          'id'   => $video->getId(),
-          'file' => $file,
+            'id'   => $video->getId(),
+            'file' => $file,
         ];
 
         return $this->router->generate('hbm_video_delivery_src', $paramsRoute) . '?' . http_build_query($paramsQuery);
@@ -96,13 +94,8 @@ class VideoDeliveryHelper extends AbstractDeliveryHelper
 
     /**
      * Dispatches a specific format for an image.
-     *
-     * @param int|string $id
-     * @param string     $file
-     *
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function dispatch($id, $file, ?Request $request = null)
+    public function dispatch(int|string|null $id, ?string $file, ?Request $request = null): CustomBinaryFileResponse|Response
     {
         if ($request === null) {
             $request = Request::createFromGlobals();

@@ -131,18 +131,18 @@ class ImageGenerationHelper
 
         // Save options
         $optionsJPG = [
-          'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
-          'resolution-x'     => 96,
-          'resolution-y'     => 96,
-          'jpeg_quality'     => $settings['quality']['jpg'],
+            'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+            'resolution-x'     => 96,
+            'resolution-y'     => 96,
+            'jpeg_quality'     => $settings['quality']['jpg'],
         ];
 
         // Save options
         $optionsPNG = [
-          'resolution-units'      => ImageInterface::RESOLUTION_PIXELSPERINCH,
-          'resolution-x'          => 96,
-          'resolution-y'          => 96,
-          'png_compression_level' => $settings['quality']['png'],
+            'resolution-units'      => ImageInterface::RESOLUTION_PIXELSPERINCH,
+            'resolution-x'          => 96,
+            'resolution-y'          => 96,
+            'png_compression_level' => $settings['quality']['png'],
         ];
 
         $options = $optionsJPG;
@@ -296,10 +296,10 @@ class ImageGenerationHelper
     {
         // Save options
         $options = [
-          'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
-          'resolution-x'     => 96,
-          'resolution-y'     => 96,
-          'jpeg_quality'     => $settings['quality']['jpg'],
+            'resolution-units' => ImageInterface::RESOLUTION_PIXELSPERINCH,
+            'resolution-x'     => 96,
+            'resolution-y'     => 96,
+            'jpeg_quality'     => $settings['quality']['jpg'],
         ];
 
         // Apply effects
@@ -502,10 +502,10 @@ class ImageGenerationHelper
         }
 
         return [
-          'value' => $geometry,
-          'unit'  => $unit,
-          'scale' => $scale,
-          'side'  => $side,
+            'value' => $geometry,
+            'unit'  => $unit,
+            'scale' => $scale,
+            'side'  => $side,
         ];
     }
 

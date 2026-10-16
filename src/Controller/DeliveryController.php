@@ -13,29 +13,15 @@ use Symfony\Component\HttpFoundation\Response;
 class DeliveryController extends AbstractController
 {
     /**
-     * @throws \Exception
-     *
-     * @return CustomBinaryFileResponse|Response
+     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
      */
-    public function serveImage(ImageDeliveryHelper $idh, Request $request, $format, $id, $file)
+    public function serveImage(ImageDeliveryHelper $idh, Request $request, string $format, string $id, string $file): CustomBinaryFileResponse|Response
     {
-        return $idh->dispatch(
-            $format,
-            $id,
-            $file,
-            $request
-        );
+        return $idh->dispatch($format, $id, $file, $request);
     }
 
-    /**
-     * @return BinaryFileResponse|Response
-     */
-    public function serveVideo(VideoDeliveryHelper $vdh, Request $request, $id, $file)
+    public function serveVideo(VideoDeliveryHelper $vdh, Request $request, string $id, string $file): BinaryFileResponse|Response
     {
-        return $vdh->dispatch(
-            $id,
-            $file,
-            $request
-        );
+        return $vdh->dispatch($id, $file, $request);
     }
 }

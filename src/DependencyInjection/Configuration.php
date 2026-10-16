@@ -2,6 +2,8 @@
 
 namespace HBM\MediaDeliveryBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -12,9 +14,6 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('hbm_media_delivery');
@@ -138,7 +137,7 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
-    private function getOverlayConfig($overlayName, $blurDefault, $blurInfo, $gravityDefault, $gravityInfo, $scaleDefault, $scaleInfo)
+    private function getOverlayConfig($overlayName, $blurDefault, $blurInfo, $gravityDefault, $gravityInfo, $scaleDefault, $scaleInfo): ArrayNodeDefinition|NodeDefinition
     {
         $builder = new TreeBuilder($overlayName);
         $node    = $builder->getRootNode();
@@ -154,7 +153,7 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
-    private function getClientConfig()
+    private function getClientConfig(): ArrayNodeDefinition|NodeDefinition
     {
         $builder = new TreeBuilder('clients');
         $node    = $builder->getRootNode();
@@ -172,7 +171,7 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
-    private function getSettingsConfig($routeDefault, $durationDefault, $cacheDefault, $memoryLimitDefault)
+    private function getSettingsConfig($routeDefault, $durationDefault, $cacheDefault, $memoryLimitDefault): ArrayNodeDefinition|NodeDefinition
     {
         $builder = new TreeBuilder('settings');
         $node    = $builder->getRootNode();
@@ -201,7 +200,7 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
-    private function getFallbackConfig()
+    private function getFallbackConfig(): ArrayNodeDefinition|NodeDefinition
     {
         $builder = new TreeBuilder('fallbacks');
         $node    = $builder->getRootNode();
@@ -217,7 +216,7 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
-    private function getSuffixConfig($suffix, $suffixFormat, $suffixFile)
+    private function getSuffixConfig($suffix, $suffixFormat, $suffixFile): ArrayNodeDefinition|NodeDefinition
     {
         $builder = new TreeBuilder($suffix);
         $node    = $builder->getRootNode();

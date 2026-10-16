@@ -4,57 +4,39 @@ namespace HBM\MediaDeliveryBundle\Entity\Interfaces;
 
 interface Image
 {
-    public function getId();
+    public function getId(): int|string;
 
-    public function getFile();
+    public function getFile(): string;
 
-    public function getWidth();
+    public function getWidth(): ?int;
 
-    public function getHeight();
+    public function getHeight(): ?int;
 
-    public function getCredit();
+    public function getCredit(): ?string;
 
-    public function getFSK();
+    public function getFSK(): ?int;
 
-    /**
-     * @return bool
-     */
-    public function useWatermarkedFormat(?User $user = null);
+    public function useWatermarkedFormat(?User $user = null): bool;
 
-    /**
-     * @return bool
-     */
-    public function useBlurredFormat(?User $user = null);
+    public function useBlurredFormat(?User $user = null): bool;
 
     /**
      * Get clipping for a certain format.
-     *
-     * @param string $format
-     *
-     * @return array:
      */
-    public function getClipping($format);
+    public function getClipping(string $format): array;
 
     /**
      * Checks if a format hat a custom clipping.
-     *
-     * @param string $format
-     *
-     * @return bool
      */
-    public function hasClipping($format);
+    public function hasClipping(string $format): bool;
 
     /**
      * Get focal point.
-     *
-     * @return array:
      */
-    public function getFocalPoint();
+    public function getFocalPoint(): array;
 
     /**
      * Checks if a focal point is defined.
-     *
-     * @return bool
      */
-    public function hasFocalPoint();
+    public function hasFocalPoint(): bool;
 }

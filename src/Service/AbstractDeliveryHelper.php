@@ -6,7 +6,6 @@ use HBM\HelperBundle\Service\HmacHelper;
 use HBM\HelperBundle\Service\SanitizingHelper;
 use HBM\MediaDeliveryBundle\HttpFoundation\CustomBinaryFileResponse;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -18,30 +17,14 @@ use Symfony\Component\Routing\RouterInterface;
  */
 abstract class AbstractDeliveryHelper
 {
-    /** @var array */
-    protected $config;
+    protected array $config;
+    protected bool $debug;
 
-    /** @var bool */
-    protected $debug;
+    protected SanitizingHelper $sanitizingHelper;
+    protected HmacHelper $hmacHelper;
+    protected RouterInterface $router;
+    protected LoggerInterface $logger;
 
-    /** @var ParameterBagInterface */
-    protected $parameterBag;
-
-    /** @var SanitizingHelper */
-    protected $sanitizingHelper;
-
-    /** @var HmacHelper */
-    protected $hmacHelper;
-
-    /** @var RouterInterface */
-    protected $router;
-
-    /** @var LoggerInterface */
-    protected $logger;
-
-    /**
-     * AbstractDeliveryHelper constructor.
-     */
     public function __construct(array $config, SanitizingHelper $sanitizingHelper, HmacHelper $hmacHelper, RouterInterface $router, LoggerInterface $logger)
     {
         $this->sanitizingHelper = $sanitizingHelper;
@@ -56,10 +39,8 @@ abstract class AbstractDeliveryHelper
     /**
      * Calculates time and duration for hmac signature.
      * If duration is preceeded with a ~, an aproximated value is used.
-     *
-     * @param int|string $duration
      */
-    public function getTimeAndDuration($duration): array
+    public function getTimeAndDuration(int|string $duration): array
     {
         $time = time();
 
@@ -84,15 +65,12 @@ abstract class AbstractDeliveryHelper
         }
 
         return [
-          'time'     => (int) $time_to_use,
-          'duration' => (int) $duration_to_use,
+            'time'     => (int) $time_to_use,
+            'duration' => (int) $duration_to_use,
         ];
     }
 
-    /**
-     * @return CustomBinaryFileResponse|Response
-     */
-    protected function serve($file, $statusCode, ?Request $request = null)
+    protected function serve(?string $file, int $statusCode, ?Request $request = null): CustomBinaryFileResponse|Response
     {
         if (!$file) {
             return new Response('', $statusCode);
@@ -117,12 +95,12 @@ abstract class AbstractDeliveryHelper
         }
 
         $headers = [
-          'Pragma'              => 'private',
-          'Cache-Control'       => 'max-age=' . $cacheSec,
-          'Expires'             => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
-          'Last-Modified'       => gmdate('D, d M Y H:i:s', $fileModificationTime) . ' GMT',
-          'Content-Type'        => mime_content_type($file),
-          'Content-Disposition' => 'inline; filename="' . basename($file) . '"',
+            'Pragma'              => 'private',
+            'Cache-Control'       => 'max-age=' . $cacheSec,
+            'Expires'             => gmdate('D, d M Y H:i:s \G\M\T', time() + $cacheSec),
+            'Last-Modified'       => gmdate('D, d M Y H:i:s', $fileModificationTime) . ' GMT',
+            'Content-Type'        => mime_content_type($file),
+            'Content-Disposition' => 'inline; filename="' . basename($file) . '"',
         ];
 
         /* SERVE */
